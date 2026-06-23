@@ -59,18 +59,42 @@ st.markdown("""
     }
     .insight-value { font-size: 1.4rem; font-weight: 700; color: #e6683c; margin-top: 4px; }
     .insight-desc { font-size: 0.75rem; color: #555; margin-top: 2px; }
+    .metric-value-audio {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2rem; font-weight: 700;
+        background: linear-gradient(90deg, #6c63ff, #a855f7, #ec4899);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .rank-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: 50%;
+        background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
+        font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+        color: #a855f7; font-size: 0.9rem;
+    }
+    .promoted-badge {
+        display: inline-block; background: rgba(236,72,153,0.15);
+        color: #ec4899; border-radius: 6px; padding: 2px 8px;
+        font-size: 0.7rem; font-weight: 700; margin-left: 6px;
+    }
+    .audio-card {
+        background: rgba(108,99,255,0.04); border: 1px solid rgba(108,99,255,0.1);
+        border-radius: 14px; padding: 16px 20px; margin-bottom: 10px;
+        transition: border-color 0.2s;
+    }
+    .audio-card:hover { border-color: rgba(168,85,247,0.4); }
 </style>
 """, unsafe_allow_html=True)
 
 # ─── DATOS ─────────────────────────────────────────────────────────────────────
 PAISES = {
-    "🇨🇱 Chile":     {"hashtag": "chile"},
-    "🇦🇷 Argentina": {"hashtag": "argentina"},
-    "🇲🇽 México":    {"hashtag": "mexico"},
-    "🇨🇴 Colombia":  {"hashtag": "colombia"},
-    "🇵🇪 Perú":      {"hashtag": "peru"},
-    "🇻🇪 Venezuela": {"hashtag": "venezuela"},
-    "🇺🇾 Uruguay":   {"hashtag": "uruguay"},
+    "🇨🇱 Chile":     {"hashtag": "chile",     "codigo": "CL"},
+    "🇦🇷 Argentina": {"hashtag": "argentina", "codigo": "AR"},
+    "🇲🇽 México":    {"hashtag": "mexico",    "codigo": "MX"},
+    "🇨🇴 Colombia":  {"hashtag": "colombia",  "codigo": "CO"},
+    "🇵🇪 Perú":      {"hashtag": "peru",      "codigo": "PE"},
+    "🇻🇪 Venezuela": {"hashtag": "venezuela", "codigo": "VE"},
+    "🇺🇾 Uruguay":   {"hashtag": "uruguay",   "codigo": "UY"},
 }
 
 CATEGORIAS = {
@@ -118,7 +142,7 @@ with st.sidebar:
 
     modulo = st.radio(
         "Módulo",
-        ["🎵 TikTok Trends", "📸 Instagram Trends"],
+        ["🎵 TikTok Trends", "📸 Instagram Trends", "🔊 Audio Trends"],
         index=0,
     )
 
@@ -133,15 +157,32 @@ with st.sidebar:
     st.markdown(f"#### 🌎 País")
     pais_sel = st.selectbox("País", list(PAISES.keys()), index=0, label_visibility="collapsed")
 
-    st.markdown("#### 📂 Categorías")
-    cats_sel = st.multiselect(
-        "Categorías", list(CATEGORIAS.keys()),
-        default=["💼 Negocios", "🚀 Emprendimiento"],
-        label_visibility="collapsed",
-    )
+    if modulo != "🔊 Audio Trends":
+        st.markdown("#### 📂 Categorías")
+        cats_sel = st.multiselect(
+            "Categorías", list(CATEGORIAS.keys()),
+            default=["💼 Negocios", "🚀 Emprendimiento"],
+            label_visibility="collapsed",
+        )
+    else:
+        cats_sel = []
 
-    max_items = st.slider("Posts a analizar", 10, 100, 30, step=10)
-    fetch_btn = st.button("🔍 Buscar Trends", disabled=not api_token or not cats_sel)
+    if modulo == "🔊 Audio Trends":
+        st.markdown("#### ⏱ Período")
+        periodo = st.selectbox(
+            "Período",
+            {"7 días": 7, "30 días": 30, "120 días": 120}.keys(),
+            index=0,
+            label_visibility="collapsed",
+        )
+        periodo_val = {"7 días": 7, "30 días": 30, "120 días": 120}[periodo]
+        max_items_audio = st.slider("Sonidos a analizar", 10, 50, 20, step=10)
+    else:
+        periodo_val = 7
+        max_items_audio = 20
+
+    max_items = st.slider("Posts a analizar", 10, 100, 30, step=10) if modulo != "🔊 Audio Trends" else 30
+    fetch_btn = st.button("🔍 Buscar Trends", disabled=not api_token or (modulo != "🔊 Audio Trends" and not cats_sel))
 
     st.markdown("---")
     st.markdown("<span style='color:#333; font-size:0.72rem;'>Powered by Apify</span>", unsafe_allow_html=True)
@@ -403,3 +444,223 @@ else:
             st.download_button("⬇ CSV", df.to_csv(index=False).encode(), f"instagram_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     else:
         st.markdown("<div style='text-align:center;padding:80px 20px;color:#444;'><div style='font-size:3rem'>📸</div><div style='color:#555;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#dc2743\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════
+#  MÓDULO 3 — AUDIO TRENDS
+# ══════════════════════════════════════════════════════
+elif modulo == "🔊 Audio Trends":
+
+    pais_info = PAISES[pais_sel]
+    country_code = pais_info["codigo"]
+
+    st.markdown(f"""
+    <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+            🔊 Audio <span style="background:linear-gradient(90deg,#6c63ff,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trends</span>
+        </div>
+        <div style="color:#555; font-size:0.9rem; margin-top:6px;">Sonidos virales en TikTok · {pais_sel} · Módulo 3</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    for k in ["au_df","au_err"]:
+        if k not in st.session_state: st.session_state[k] = None
+
+    if fetch_btn and api_token:
+        actor_id = "automation-lab~tiktok-trends-scraper"
+        url = f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items"
+        payload = {
+            "dataTypes": ["sounds"],
+            "countryCode": country_code,
+            "period": periodo_val,
+            "maxItems": max_items_audio,
+        }
+        with st.spinner(f"⏳ Extrayendo audios trending en {pais_sel}..."):
+            try:
+                resp = requests.post(url, json=payload,
+                                     params={"token": api_token, "timeout": 120}, timeout=180)
+                resp.raise_for_status()
+                raw = resp.json()
+
+                rows = []
+                for item in raw:
+                    # el actor puede devolver distintas estructuras
+                    sound = item.get("sound") or item.get("music") or item
+                    rows.append({
+                        "rank":       item.get("rank") or item.get("position") or len(rows)+1,
+                        "titulo":     sound.get("title") or sound.get("name") or item.get("title","—"),
+                        "artista":    sound.get("authorName") or sound.get("author") or item.get("authorName","—"),
+                        "duracion":   sound.get("duration") or item.get("duration", 0),
+                        "promocionado": bool(item.get("isPromoted") or item.get("promoted", False)),
+                        "usos":       item.get("useCount") or item.get("videoCount") or 0,
+                        "url_sound":  sound.get("playUrl") or sound.get("url") or item.get("link",""),
+                        "cover":      sound.get("coverThumb") or sound.get("coverUrl") or "",
+                        "trend_7d":   item.get("trend7") or item.get("trendChange7") or 0,
+                        "trend_30d":  item.get("trend30") or item.get("trendChange30") or 0,
+                    })
+
+                df_au = pd.DataFrame(rows)
+                if not df_au.empty:
+                    df_au = df_au.sort_values("rank").reset_index(drop=True)
+                st.session_state.au_df  = df_au
+                st.session_state.au_err = None
+            except requests.exceptions.HTTPError:
+                st.session_state.au_err = f"Error HTTP {resp.status_code}. Verifica tu token."
+                st.session_state.au_df  = None
+            except Exception as e:
+                st.session_state.au_err = str(e)
+                st.session_state.au_df  = None
+
+    if st.session_state.au_err:
+        st.error(f"❌ {st.session_state.au_err}")
+
+    df_au = st.session_state.au_df
+
+    if df_au is not None and not df_au.empty:
+
+        # KPIs
+        c1,c2,c3,c4 = st.columns(4)
+        promoted_count = df_au["promocionado"].sum() if "promocionado" in df_au.columns else 0
+        avg_dur = df_au["duracion"].mean() if "duracion" in df_au.columns else 0
+        top_usos = df_au["usos"].max() if "usos" in df_au.columns else 0
+        for col,(val,lbl) in zip([c1,c2,c3,c4],[
+            (len(df_au),           "Sonidos analizados"),
+            (fmt_number(top_usos), "Máx. usos en videos"),
+            (f"{avg_dur:.0f}s",    "Duración promedio"),
+            (int(promoted_count),  "Sonidos promocionados"),
+        ]):
+            with col:
+                st.markdown(f'<div class="metric-card"><div class="metric-value-audio">{val}</div><div class="metric-label">{lbl}</div></div>', unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        tab1, tab2, tab3 = st.tabs(["🏆 Ranking", "📊 Visualizaciones", "📋 Tabla"])
+
+        # ── TAB 1: RANKING ──
+        with tab1:
+            st.markdown(f"#### Top sonidos trending en {pais_sel} · últimos {periodo_val} días")
+            for _, row in df_au.iterrows():
+                promo_html = '<span class="promoted-badge">📢 Promocionado</span>' if row.get("promocionado") else ""
+                trend_html = ""
+                if row.get("trend_7d"):
+                    signo = "▲" if row["trend_7d"] > 0 else "▼"
+                    color = "#4ade80" if row["trend_7d"] > 0 else "#f87171"
+                    trend_html = f'<span style="color:{color};font-size:0.78rem">{signo} {abs(row["trend_7d"]):.0f}% 7d</span>'
+
+                ca, cb, cc = st.columns([1, 7, 2])
+                with ca:
+                    st.markdown(f'<div class="rank-badge">#{int(row["rank"])}</div>', unsafe_allow_html=True)
+                with cb:
+                    st.markdown(f"""
+                    <div style="padding-top:4px">
+                        <div style="font-family:Space Grotesk;font-weight:700;color:#f0f0f5;font-size:1rem">
+                            {row['titulo']} {promo_html}
+                        </div>
+                        <div style="color:#888;font-size:0.82rem;margin-top:2px">
+                            🎤 {row['artista']} &nbsp;·&nbsp; ⏱ {row['duracion']}s &nbsp;·&nbsp; {trend_html}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with cc:
+                    usos_fmt = fmt_number(row["usos"]) if row["usos"] else "—"
+                    st.markdown(f"""
+                    <div style="text-align:right;padding-top:4px">
+                        <div style="font-family:Space Grotesk;font-weight:700;color:#a855f7;font-size:1.1rem">{usos_fmt}</div>
+                        <div style="color:#555;font-size:0.72rem">videos usando este audio</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                if row.get("url_sound"):
+                    st.markdown(f"<a href='{row['url_sound']}' target='_blank' style='color:#444;font-size:0.72rem;'>Escuchar ↗</a>", unsafe_allow_html=True)
+                st.markdown("<hr>", unsafe_allow_html=True)
+
+        # ── TAB 2: CHARTS ──
+        with tab2:
+            PL = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",
+                      font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=10,t=40,b=0))
+
+            # Usos por sonido
+            fig1 = px.bar(
+                df_au.head(15), x="usos", y="titulo", orientation="h",
+                title="🎵 Top sonidos por cantidad de videos",
+                color="usos", color_continuous_scale=["#1a1030","#a855f7"],
+                labels={"usos":"Videos","titulo":""},
+            )
+            fig1.update_layout(**PL, coloraxis_showscale=False, yaxis=dict(autorange="reversed"))
+            fig1.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+            st.plotly_chart(fig1, use_container_width=True)
+
+            ca, cb = st.columns(2)
+            with ca:
+                # Duración distribución
+                fig2 = px.histogram(
+                    df_au, x="duracion", nbins=10,
+                    title="⏱ Distribución de duración de audios (seg)",
+                    color_discrete_sequence=["#6c63ff"],
+                    labels={"duracion":"Duración (s)","count":"Cantidad"},
+                )
+                fig2.update_layout(**PL)
+                fig2.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig2.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
+                st.plotly_chart(fig2, use_container_width=True)
+
+            with cb:
+                # Promocionado vs orgánico
+                if "promocionado" in df_au.columns:
+                    promo_df = df_au["promocionado"].value_counts().reset_index()
+                    promo_df.columns = ["tipo","count"]
+                    promo_df["tipo"] = promo_df["tipo"].map({True:"Promocionado",False:"Orgánico"})
+                    fig3 = px.pie(
+                        promo_df, values="count", names="tipo",
+                        title="📢 Orgánico vs Promocionado",
+                        color_discrete_map={"Promocionado":"#ec4899","Orgánico":"#6c63ff"},
+                        hole=0.5,
+                    )
+                    fig3.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5")
+                    st.plotly_chart(fig3, use_container_width=True)
+
+            # Trend chart si hay datos
+            if df_au["trend_7d"].any():
+                df_trend = df_au[df_au["trend_7d"] != 0].copy()
+                df_trend["color"] = df_trend["trend_7d"].apply(lambda x: "Subiendo" if x > 0 else "Bajando")
+                fig4 = px.bar(
+                    df_trend.head(15), x="titulo", y="trend_7d",
+                    color="color",
+                    color_discrete_map={"Subiendo":"#4ade80","Bajando":"#f87171"},
+                    title="📈 Tendencia 7 días por sonido",
+                    labels={"trend_7d":"Cambio %","titulo":""},
+                )
+                fig4.update_layout(**PL)
+                fig4.update_xaxes(tickangle=-35, gridcolor="rgba(0,0,0,0)")
+                fig4.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
+                st.plotly_chart(fig4, use_container_width=True)
+
+        # ── TAB 3: TABLA ──
+        with tab3:
+            show = ["rank","titulo","artista","usos","duracion","promocionado","trend_7d","trend_30d","url_sound"]
+            st.dataframe(
+                df_au[[c for c in show if c in df_au.columns]].rename(columns={
+                    "rank":"Rank","titulo":"Título","artista":"Artista",
+                    "usos":"Videos","duracion":"Duración (s)",
+                    "promocionado":"Promocionado","trend_7d":"Trend 7d %",
+                    "trend_30d":"Trend 30d %","url_sound":"URL Audio",
+                }),
+                use_container_width=True, height=450,
+            )
+            st.download_button(
+                "⬇ CSV", df_au.to_csv(index=False).encode(),
+                f"audio_trends_{country_code}_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv"
+            )
+
+    else:
+        st.markdown(f"""
+        <div style="text-align:center;padding:80px 20px;color:#444;">
+            <div style="font-size:3rem">🔊</div>
+            <div style="color:#555;margin-top:12px;font-family:Space Grotesk;font-size:1.1rem">
+                Ingresa tu token y pulsa <strong style="color:#a855f7">Buscar Trends</strong>
+            </div>
+            <div style="color:#333;font-size:0.82rem;margin-top:8px">
+                Extrae los audios más virales en TikTok {pais_sel} via TikTok Creative Center
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
