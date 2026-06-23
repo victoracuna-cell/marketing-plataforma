@@ -8,166 +8,211 @@ import re
 
 st.set_page_config(
     page_title="Social Trends Platform",
-    page_icon="🚀",
+    page_icon="📊",
     layout="wide",
 )
 
-# ─── ESTILOS TUU ───────────────────────────────────────────────────────────────
+# ─── ESTILOS ──────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    /* ── BASE ── */
-    html, body, [class*="css"], .stApp { background-color: #f7f8fa !important; }
-    * { font-family: 'Inter', sans-serif !important; }
-    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif !important; color: #1a1a1a !important; }
-    p, span, div, label { color: #1a1a1a; }
+    /* BASE */
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
+    .stApp { background: #f0f2f5 !important; }
 
-    /* ── SIDEBAR ── */
-    section[data-testid="stSidebar"] > div { background: #ffffff !important; border-right: 1px solid #e8e8e8; }
-    section[data-testid="stSidebar"] * { color: #1a1a1a !important; }
-    section[data-testid="stSidebar"] small, section[data-testid="stSidebar"] .stMarkdown p { color: #999 !important; font-size: 0.75rem !important; }
+    /* SIDEBAR — dark navy like FinDash */
+    section[data-testid="stSidebar"] > div {
+        background: #1e2139 !important;
+        border-right: none !important;
+        padding-top: 0 !important;
+    }
+    section[data-testid="stSidebar"] * { color: #a0a8c0 !important; }
+    section[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.08) !important; }
 
-    /* ── RADIO BUTTONS ── */
-    .stRadio [data-testid="stMarkdownContainer"] p { color: #333 !important; font-size: 0.88rem !important; font-weight: 500; }
-    div[role="radiogroup"] label { gap: 8px; }
-    div[role="radiogroup"] label:hover div[data-testid="stMarkdownContainer"] p { color: #00C08B !important; }
+    /* SIDEBAR radio labels */
+    .stRadio [data-testid="stMarkdownContainer"] p {
+        color: #a0a8c0 !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.01em;
+    }
+    div[role="radiogroup"] label:hover [data-testid="stMarkdownContainer"] p { color: #ffffff !important; }
+    div[role="radiogroup"] [aria-checked="true"] [data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important; font-weight: 600 !important;
+    }
+    div[role="radiogroup"] [aria-checked="true"] {
+        background: rgba(99,130,255,0.15) !important;
+        border-radius: 8px !important;
+    }
 
-    /* ── MULTISELECT — override red tags ── */
+    /* SIDEBAR section labels */
+    section[data-testid="stSidebar"] label {
+        color: #6b7399 !important; font-size: 0.72rem !important;
+        text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600 !important;
+    }
+
+    /* MAIN content area */
+    .block-container { padding: 2rem 2rem 2rem 2rem !important; max-width: 1300px; }
+
+    /* WHITE CARDS */
+    .card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+        margin-bottom: 16px;
+    }
+
+    /* METRIC CARDS */
+    .metric-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 20px 22px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        margin-bottom: 0;
+    }
+    .metric-card.active { background: #4361ee; }
+    .metric-card.active .metric-value-tiktok,
+    .metric-card.active .metric-label { color: #ffffff !important; }
+    .metric-value-tiktok, .metric-value-ig, .metric-value-audio {
+        font-size: 1.75rem; font-weight: 700; color: #1e2139; line-height: 1.1;
+    }
+    .metric-label {
+        font-size: 0.72rem; color: #8896b0; text-transform: uppercase;
+        letter-spacing: 0.09em; margin-top: 4px; font-weight: 600;
+    }
+    .metric-change-pos { font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 4px; }
+    .metric-change-neg { font-size: 0.75rem; color: #ef4444; font-weight: 600; margin-top: 4px; }
+
+    /* PAGE HEADER */
+    .page-header { margin-bottom: 24px; }
+    .page-title { font-size: 1.75rem; font-weight: 700; color: #1e2139; line-height: 1.2; }
+    .page-title span { color: #4361ee; }
+    .page-sub { font-size: 0.82rem; color: #8896b0; margin-top: 4px; font-weight: 400; }
+
+    /* TABS */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #ffffff !important;
+        border-radius: 12px 12px 0 0 !important;
+        border-bottom: 2px solid #f0f2f5 !important;
+        padding: 0 8px !important; gap: 0;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent !important; border: none !important;
+        color: #8896b0 !important; font-weight: 600 !important; font-size: 0.85rem !important;
+        padding: 12px 20px !important; border-radius: 0 !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover { color: #4361ee !important; }
+    .stTabs [aria-selected="true"] {
+        color: #4361ee !important;
+        border-bottom: 2px solid #4361ee !important;
+    }
+    .stTabs [data-baseweb="tab-panel"] { padding: 0 !important; }
+
+    /* MULTISELECT TAGS */
     [data-baseweb="tag"] {
-        background-color: #e8faf4 !important;
-        border: 1px solid #00C08B !important;
+        background: #eef0ff !important;
+        border: 1px solid #c7ceff !important;
         border-radius: 6px !important;
     }
-    [data-baseweb="tag"] span { color: #00A077 !important; font-weight: 600 !important; font-size: 0.75rem !important; }
-    [data-baseweb="tag"] button svg { fill: #00A077 !important; }
-    [data-baseweb="select"] > div { border-color: #e8e8e8 !important; background: #fff !important; border-radius: 8px !important; }
+    [data-baseweb="tag"] span { color: #4361ee !important; font-weight: 600 !important; font-size: 0.75rem !important; }
+    [data-baseweb="tag"] button svg { fill: #4361ee !important; }
+    [data-baseweb="select"] > div {
+        border: 1.5px solid #e8eaf0 !important;
+        background: #fff !important; border-radius: 8px !important;
+    }
 
-    /* ── INPUTS ── */
+    /* INPUTS */
     .stTextInput input {
-        background: #ffffff !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 8px !important;
-        color: #1a1a1a !important;
+        background: #fff !important; border: 1.5px solid #e8eaf0 !important;
+        border-radius: 8px !important; color: #1e2139 !important;
+        font-size: 0.88rem !important;
     }
-    .stTextInput input:focus { border-color: #00C08B !important; box-shadow: 0 0 0 2px rgba(0,192,139,0.12) !important; }
-    .stSelectbox [data-baseweb="select"] > div { background: #fff !important; border: 1.5px solid #e8e8e8 !important; border-radius: 8px !important; }
+    .stTextInput input:focus { border-color: #4361ee !important; box-shadow: 0 0 0 3px rgba(67,97,238,0.1) !important; }
+    .stSelectbox [data-baseweb="select"] > div {
+        border: 1.5px solid #e8eaf0 !important; background: #fff !important; border-radius: 8px !important;
+    }
 
-    /* ── SLIDER ── */
-    .stSlider [data-baseweb="slider"] div[role="slider"] { background: #00C08B !important; border-color: #00C08B !important; }
-    .stSlider [data-testid="stSlider"] > div > div > div { background: #00C08B !important; }
-
-    /* ── BUTTONS ── */
+    /* BUTTONS */
     .stButton > button {
-        background: #00C08B !important; color: #fff !important;
+        background: #4361ee !important; color: #fff !important;
         border: none !important; border-radius: 10px !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-weight: 600 !important; font-size: 0.9rem !important;
+        font-weight: 600 !important; font-size: 0.88rem !important;
         padding: 10px 20px !important; width: 100% !important;
-        box-shadow: 0 2px 8px rgba(0,192,139,0.25) !important;
-        transition: all 0.15s !important;
+        box-shadow: 0 4px 12px rgba(67,97,238,0.3) !important;
+        letter-spacing: 0.01em !important; transition: all 0.15s !important;
     }
-    .stButton > button:hover { background: #00A077 !important; box-shadow: 0 4px 12px rgba(0,192,139,0.3) !important; }
-    .stButton > button:disabled { background: #d0d0d0 !important; box-shadow: none !important; }
+    .stButton > button:hover { background: #3451d1 !important; box-shadow: 0 6px 16px rgba(67,97,238,0.4) !important; }
+    .stButton > button:disabled { background: #d0d4e8 !important; box-shadow: none !important; color: #9aa0b8 !important; }
     .stDownloadButton > button {
-        background: #fff !important; color: #00C08B !important;
-        border: 1.5px solid #00C08B !important; border-radius: 8px !important;
-        font-weight: 600 !important; box-shadow: none !important;
+        background: #fff !important; color: #4361ee !important;
+        border: 1.5px solid #4361ee !important; border-radius: 8px !important;
+        font-weight: 600 !important; box-shadow: none !important; width: auto !important;
     }
-    .stDownloadButton > button:hover { background: #e8faf4 !important; }
+    .stDownloadButton > button:hover { background: #eef0ff !important; }
 
-    /* ── TABS ── */
-    .stTabs [data-baseweb="tab-list"] { background: transparent !important; border-bottom: 2px solid #e8e8e8 !important; gap: 4px; }
-    .stTabs [data-baseweb="tab"] {
-        background: transparent !important; color: #888 !important;
-        font-family: 'Space Grotesk', sans-serif !important; font-weight: 600 !important;
-        border-radius: 8px 8px 0 0 !important; padding: 8px 18px !important;
-        border: none !important;
-    }
-    .stTabs [data-baseweb="tab"]:hover { color: #00C08B !important; background: #f0faf7 !important; }
-    .stTabs [aria-selected="true"] { color: #00C08B !important; border-bottom: 2px solid #00C08B !important; }
-    .stTabs [data-baseweb="tab-panel"] { padding-top: 20px !important; }
+    /* SLIDER */
+    .stSlider [data-baseweb="slider"] div[role="slider"] { background: #4361ee !important; border-color: #4361ee !important; }
 
-    /* ── METRIC CARDS ── */
-    .metric-card {
-        background: #ffffff; border: 1px solid #e8e8e8;
-        border-radius: 14px; padding: 20px 24px; margin-bottom: 12px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .metric-value { font-family: 'Space Grotesk', sans-serif !important; font-size: 2rem; font-weight: 700; color: #00C08B; }
-    .metric-value-tiktok  { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-value-ig      { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-value-audio   { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-label { font-size:0.72rem; color:#999; text-transform:uppercase; letter-spacing:0.1em; margin-top:4px; font-weight:500; }
+    /* DATAFRAME */
+    .stDataFrame { border-radius: 12px !important; overflow: hidden !important; border: 1px solid #e8eaf0 !important; }
+    .stDataFrame thead tr th { background: #f7f8fa !important; color: #1e2139 !important; font-weight: 600 !important; font-size: 0.8rem !important; }
 
-    /* ── TAGS ── */
+    /* DIVIDER */
+    hr { border-color: #e8eaf0 !important; }
+
+    /* ALERTS */
+    .stAlert { border-radius: 10px !important; }
+    .stWarning { background: #fffbf0 !important; }
+    .stError   { background: #fff5f5 !important; }
+    .stInfo    { background: #f0f4ff !important; }
+
+    /* TAGS */
     .tag, .tag-ig {
-        display:inline-block; background:#e8faf4; color:#00A077;
-        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
+        display: inline-block; background: #eef0ff; color: #4361ee;
+        border-radius: 6px; padding: 2px 8px; font-size: 0.7rem;
+        font-weight: 600; margin-right: 4px; margin-top: 3px;
     }
 
-    /* ── FILTER BADGE ── */
+    /* FILTER BADGE */
     .filter-badge {
-        display:inline-block; background:#e8faf4; border:1px solid #b8e8d8;
-        color:#00A077; border-radius:20px; padding:3px 12px;
-        font-size:0.75rem; font-weight:600; margin-right:6px; margin-bottom:8px;
+        display: inline-block; background: #eef0ff; border: 1px solid #c7ceff;
+        color: #4361ee; border-radius: 20px; padding: 3px 12px;
+        font-size: 0.75rem; font-weight: 600; margin-right: 6px; margin-bottom: 8px;
     }
 
-    /* ── INSIGHT BOX ── */
+    /* INSIGHT BOX */
     .insight-box {
-        background:#f0faf7; border:1px solid #c0ede0;
-        border-radius:12px; padding:14px 18px; margin-bottom:12px;
+        background: #f7f8ff; border: 1px solid #dce0ff;
+        border-radius: 12px; padding: 14px 18px; margin-bottom: 12px;
     }
-    .insight-value { font-size:1.3rem; font-weight:700; color:#00C08B; margin-top:4px; }
-    .insight-desc  { font-size:0.75rem; color:#666; margin-top:2px; }
+    .insight-value { font-size: 1.3rem; font-weight: 700; color: #4361ee; margin-top: 4px; }
+    .insight-desc  { font-size: 0.75rem; color: #8896b0; margin-top: 2px; }
 
-    /* ── RANK BADGE ── */
+    /* RANK BADGE */
     .rank-badge {
-        display:inline-flex; align-items:center; justify-content:center;
-        width:34px; height:34px; border-radius:50%;
-        background:#e8faf4; border:1.5px solid #00C08B;
-        font-family:'Space Grotesk',sans-serif; font-weight:700; color:#00C08B; font-size:0.85rem;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #eef0ff; border: 1.5px solid #4361ee;
+        font-weight: 700; color: #4361ee; font-size: 0.82rem;
     }
     .promoted-badge {
-        display:inline-block; background:#fff3e0; color:#c97000;
-        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:700; margin-left:6px;
+        display: inline-block; background: #fff8ec; color: #c97000;
+        border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; margin-left: 4px;
     }
 
-    /* ── ITEM CARDS ── */
-    .item-card {
-        background:#fff; border:1px solid #e8e8e8; border-radius:12px;
-        padding:16px 20px; margin-bottom:10px;
-        box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:border-color 0.15s;
+    /* SPINNER */
+    .stSpinner > div { border-top-color: #4361ee !important; }
+
+    /* EXPANDER */
+    .streamlit-expanderHeader {
+        background: #fff !important; border: 1px solid #e8eaf0 !important;
+        border-radius: 8px !important; color: #1e2139 !important;
     }
-    .item-card:hover { border-color:#00C08B; }
-
-    /* ── PAGE HEADER ── */
-    .page-header { padding:24px 0 14px; border-bottom:2px solid #e8e8e8; margin-bottom:24px; }
-    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#1a1a1a; }
-    .page-title span { color:#00C08B; }
-    .page-sub { color:#999; font-size:0.85rem; margin-top:5px; }
-
-    /* ── DATAFRAME ── */
-    .stDataFrame { border-radius:10px !important; border:1px solid #e8e8e8 !important; }
-    .stDataFrame thead th { background:#f7f8fa !important; color:#1a1a1a !important; font-weight:600 !important; }
-
-    /* ── DIVIDERS ── */
-    hr { border-color:#e8e8e8 !important; }
-
-    /* ── ALERTS ── */
-    .stAlert { border-radius:10px !important; }
-    .stWarning { background:#fffbf0 !important; border-left:3px solid #f0a500 !important; }
-    .stError   { background:#fff5f5 !important; border-left:3px solid #ff4444 !important; }
-    .stInfo    { background:#f0faf7 !important; border-left:3px solid #00C08B !important; }
-
-    /* ── EXPANDER ── */
-    .streamlit-expanderHeader { background:#fff !important; border:1px solid #e8e8e8 !important; border-radius:8px !important; }
-
-    /* ── MISC ── */
-    .block-container { padding-top:1.5rem !important; max-width:1200px; }
-    .stSpinner > div { border-top-color: #00C08B !important; }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ─── DATOS ─────────────────────────────────────────────────────────────────────
 PAISES = {
@@ -221,18 +266,17 @@ def build_hashtags_ig(pais_key, cats_sel):
 # ─── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
-    <div style="padding:8px 0 4px">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:#1a1a1a;">
-            📊 Social Trends
-        </div>
-        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">by TUU · Apify · TrendsMCP</div>
+    <div style="padding:28px 20px 20px 20px; margin:-1rem -1rem 0 -1rem;">
+        <div style="font-size:1.15rem;font-weight:700;color:#ffffff;letter-spacing:-0.01em;">Social Trends</div>
+        <div style="font-size:0.72rem;color:#6b7399;margin-top:2px;">by TUU · Apify · TrendsMCP</div>
     </div>
+    <div style="margin:16px -1rem 8px -1rem; border-bottom:1px solid rgba(255,255,255,0.07);"></div>
+    <div style="font-size:0.68rem;color:#6b7399;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 0 8px 0;">MÓDULOS</div>
     """, unsafe_allow_html=True)
-    st.markdown("---")
 
     modulo = st.radio(
         "Módulo",
-        ["🎵 TikTok Trends", "📸 Instagram Trends", "🔊 Audio Trends", "📡 Tendencias Cruzadas"],
+        ["TikTok Trends", "Instagram Trends", "Audio Trends", "Tendencias Cruzadas"],
         index=0,
     )
 
@@ -244,11 +288,11 @@ with st.sidebar:
         placeholder="apify_api_xxxxxxxxxxxx",
     )
 
-    st.markdown(f"#### 🌎 País")
+    st.markdown("<div style='font-size:0.72rem;color:#6b7399;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-top:12px;margin-bottom:4px'>PAÍS</div>", unsafe_allow_html=True)
     pais_sel = st.selectbox("País", list(PAISES.keys()), index=0, label_visibility="collapsed")
 
-    if modulo != "🔊 Audio Trends":
-        st.markdown("#### 📂 Categorías")
+    if modulo != "Audio Trends":
+        st.markdown("<div style='font-size:0.72rem;color:#6b7399;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-top:12px;margin-bottom:4px'>CATEGORÍAS</div>", unsafe_allow_html=True)
         cats_sel = st.multiselect(
             "Categorías", list(CATEGORIAS.keys()),
             default=["💼 Negocios", "🚀 Emprendimiento"],
@@ -257,8 +301,8 @@ with st.sidebar:
     else:
         cats_sel = []
 
-    if modulo == "🔊 Audio Trends":
-        st.markdown("#### ⏱ Período")
+    if modulo == "Audio Trends":
+        st.markdown("<div style='font-size:0.72rem;color:#6b7399;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-top:12px;margin-bottom:4px'>PERÍODO</div>", unsafe_allow_html=True)
         periodo = st.selectbox(
             "Período",
             {"7 días": 7, "30 días": 30, "120 días": 120}.keys(),
@@ -271,8 +315,8 @@ with st.sidebar:
         periodo_val = 7
         max_items_audio = 20
 
-    max_items = st.slider("Posts a analizar", 10, 100, 30, step=10) if modulo != "🔊 Audio Trends" else 30
-    fetch_btn = st.button("🔍 Buscar Trends", disabled=not api_token or (modulo != "🔊 Audio Trends" and not cats_sel))
+    max_items = st.slider("Posts a analizar", 10, 100, 30, step=10) if modulo != "Audio Trends" else 30
+    fetch_btn = st.button("🔍 Buscar Trends", disabled=not api_token or (modulo != "Audio Trends" and not cats_sel))
 
     st.markdown("---")
     st.markdown("<span style='color:#333; font-size:0.72rem;'>Powered by Apify</span>", unsafe_allow_html=True)
@@ -280,7 +324,7 @@ with st.sidebar:
 # ══════════════════════════════════════════════════════
 #  MÓDULO 1 — TIKTOK
 # ══════════════════════════════════════════════════════
-if modulo == "🎵 TikTok Trends":
+if modulo == "TikTok Trends":
 
     st.markdown("""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
@@ -373,17 +417,17 @@ if modulo == "🎵 TikTok Trends":
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
-            PL = dict(paper_bgcolor="#ffffff",plot_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a",margin=dict(l=0,r=10,t=40,b=0))
+            PL = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color="#8896b0",title_font_color="#1e2139",margin=dict(l=0,r=10,t=40,b=0))
             ca,cb = st.columns(2)
             with ca:
-                fig = px.bar(df.head(15),x="plays",y="nickname",orientation="h",title="Top 15 · Reproducciones",color="plays",color_continuous_scale=["#e8faf4","#00C08B"],labels={"plays":"Plays","nickname":""})
+                fig = px.bar(df.head(15),x="plays",y="nickname",orientation="h",title="Top 15 · Reproducciones",color="plays",color_continuous_scale=["#dce1ff","#4361ee"],labels={"plays":"Plays","nickname":""})
                 fig.update_layout(**PL,coloraxis_showscale=False,yaxis=dict(autorange="reversed"))
-                fig.update_xaxes(gridcolor="#f0f0f0")
+                fig.update_xaxes(gridcolor="#f0f2f5")
                 st.plotly_chart(fig,use_container_width=True)
             with cb:
                 mc = df["musica"].value_counts().head(6).reset_index(); mc.columns=["musica","count"]
-                fig2 = px.pie(mc,values="count",names="musica",title="🎵 Músicas más usadas",hole=0.45,color_discrete_sequence=["#00C08B","#00A077","#007a5a","#e8faf4","#c0ede0"])
-                fig2.update_layout(paper_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a")
+                fig2 = px.pie(mc,values="count",names="musica",title="🎵 Músicas más usadas",hole=0.45,color_discrete_sequence=["#4361ee","#7b8fff","#a5b0ff","#1e2139","#8896b0"])
+                fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#8896b0",title_font_color="#1e2139")
                 st.plotly_chart(fig2,use_container_width=True)
 
         with tab3:
@@ -397,7 +441,7 @@ if modulo == "🎵 TikTok Trends":
 # ══════════════════════════════════════════════════════
 #  MÓDULO 2 — INSTAGRAM
 # ══════════════════════════════════════════════════════
-elif modulo == "📸 Instagram Trends":
+elif modulo == "Instagram Trends":
 
     st.markdown("""
     <div class="page-header">
@@ -493,17 +537,17 @@ elif modulo == "📸 Instagram Trends":
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
-            PL = dict(paper_bgcolor="#ffffff",plot_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a",margin=dict(l=0,r=10,t=40,b=0))
+            PL = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color="#8896b0",title_font_color="#1e2139",margin=dict(l=0,r=10,t=40,b=0))
             ca,cb = st.columns(2)
             with ca:
-                fig = px.bar(df.head(15),x="engagement",y="autor",orientation="h",title="Top 15 · Engagement",color="engagement",color_continuous_scale=["#e8faf4","#00C08B"],labels={"engagement":"Engagement","autor":""})
+                fig = px.bar(df.head(15),x="engagement",y="autor",orientation="h",title="Top 15 · Engagement",color="engagement",color_continuous_scale=["#dce1ff","#4361ee"],labels={"engagement":"Engagement","autor":""})
                 fig.update_layout(**PL,coloraxis_showscale=False,yaxis=dict(autorange="reversed"))
-                fig.update_xaxes(gridcolor="#f0f0f0")
+                fig.update_xaxes(gridcolor="#f0f2f5")
                 st.plotly_chart(fig,use_container_width=True)
             with cb:
                 tc = df["tipo"].value_counts().reset_index(); tc.columns=["tipo","count"]
-                fig2 = px.pie(tc,values="count",names="tipo",title="Distribución por tipo",hole=0.5,color_discrete_map={"Reel":"#00C08B","Imagen":"#1a1a1a","Carousel":"#7fd4ba"})
-                fig2.update_layout(paper_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a")
+                fig2 = px.pie(tc,values="count",names="tipo",title="Distribución por tipo",hole=0.5,color_discrete_map={"Reel":"#4361ee","Imagen":"#1e2139","Carousel":"#a5b0ff"})
+                fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#8896b0",title_font_color="#1e2139")
                 st.plotly_chart(fig2,use_container_width=True)
 
         with tab3:
@@ -537,14 +581,14 @@ elif modulo == "📸 Instagram Trends":
 # ══════════════════════════════════════════════════════
 #  MÓDULO 3 — AUDIO TRENDS
 # ══════════════════════════════════════════════════════
-elif modulo == "🔊 Audio Trends":
+elif modulo == "Audio Trends":
 
     pais_info = PAISES[pais_sel]
     country_code = pais_info["codigo"]
 
     st.markdown(f"""
     <div class="page-header">
-        <div class="page-title">🔊 Audio <span>Trends</span></div>
+        <div class="page-title">Audio <span>Trends</span></div>
         <div class="page-sub">Sonidos virales en TikTok · {pais_sel} · Módulo 3 · Powered by Apify</div>
     </div>
     """, unsafe_allow_html=True)
@@ -726,11 +770,11 @@ elif modulo == "🔊 Audio Trends":
             fig1 = px.bar(
                 df_au.head(15), x="usos", y="titulo", orientation="h",
                 title="🎵 Top sonidos por cantidad de videos",
-                color="usos", color_continuous_scale=["#e8faf4","#00C08B"],
+                color="usos", color_continuous_scale=["#dce1ff","#4361ee"],
                 labels={"usos":"Videos","titulo":""},
             )
             fig1.update_layout(**PL, coloraxis_showscale=False, yaxis=dict(autorange="reversed"))
-            fig1.update_xaxes(gridcolor="#f0f0f0")
+            fig1.update_xaxes(gridcolor="#f0f2f5")
             st.plotly_chart(fig1, use_container_width=True)
 
             ca, cb = st.columns(2)
@@ -739,12 +783,12 @@ elif modulo == "🔊 Audio Trends":
                 fig2 = px.histogram(
                     df_au, x="duracion", nbins=10,
                     title="⏱ Distribución de duración (seg)",
-                    color_discrete_sequence=["#00C08B"],
+                    color_discrete_sequence=["#4361ee"],
                     labels={"duracion":"Duración (s)"},
                 )
                 fig2.update_layout(**PL)
-                fig2.update_xaxes(gridcolor="#f0f0f0")
-                fig2.update_yaxes(gridcolor="#f0f0f0")
+                fig2.update_xaxes(gridcolor="#f0f2f5")
+                fig2.update_yaxes(gridcolor="#f0f2f5")
                 st.plotly_chart(fig2, use_container_width=True)
 
             with cb:
@@ -752,12 +796,12 @@ elif modulo == "🔊 Audio Trends":
                     df_au, x="usos", y="likes_total",
                     hover_name="titulo", size="usos",
                     title="🎯 Usos vs Likes totales",
-                    color_discrete_sequence=["#00C08B"],
+                    color_discrete_sequence=["#4361ee"],
                     labels={"usos":"Videos usando el audio","likes_total":"Likes acumulados"},
                 )
                 fig3.update_layout(**PL)
-                fig3.update_xaxes(gridcolor="#f0f0f0")
-                fig3.update_yaxes(gridcolor="#f0f0f0")
+                fig3.update_xaxes(gridcolor="#f0f2f5")
+                fig3.update_yaxes(gridcolor="#f0f2f5")
                 st.plotly_chart(fig3, use_container_width=True)
 
         # ── TAB 3: TABLA ──
@@ -780,7 +824,7 @@ elif modulo == "🔊 Audio Trends":
     else:
         st.markdown(f"""
         <div style="text-align:center;padding:80px 20px;color:#bbb;">
-            <div style="font-size:3rem">🔊</div>
+            <div style="font-size:2rem;color:#d0d4e8;font-weight:700;font-family:'Inter',sans-serif">♪</div>
             <div style="color:#888;margin-top:12px;font-family:Space Grotesk;font-size:1.1rem">
                 Ingresa tu token y pulsa <strong style="color:#a855f7">Buscar Trends</strong>
             </div>
@@ -794,11 +838,11 @@ elif modulo == "🔊 Audio Trends":
 # ══════════════════════════════════════════════════════
 #  MÓDULO 4 — TENDENCIAS CRUZADAS (TrendsMCP)
 # ══════════════════════════════════════════════════════
-elif modulo == "📡 Tendencias Cruzadas":
+elif modulo == "Tendencias Cruzadas":
 
     st.markdown("""
     <div class="page-header">
-        <div class="page-title">📡 Tendencias <span>Cruzadas</span></div>
+        <div class="page-title">Tendencias <span>Cruzadas</span></div>
         <div class="page-sub">Google · TikTok · YouTube · Reddit en una sola vista · Módulo 4 · Powered by TrendsMCP</div>
     </div>
     """, unsafe_allow_html=True)
@@ -896,7 +940,7 @@ elif modulo == "📡 Tendencias Cruzadas":
     cx_data   = st.session_state.cx_data
     cx_growth = st.session_state.cx_growth
     kw        = st.session_state.cx_keyword
-    COLORS    = ["#00C08B","#1a1a1a","#7fd4ba","#00A077","#c0ede0","#555555"]
+    COLORS    = ["#4361ee","#1e2139","#7b8fff","#a5b0ff","#dce1ff","#8896b0"]
     PL        = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",
                      font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=0,t=40,b=0))
 
@@ -929,9 +973,9 @@ elif modulo == "📡 Tendencias Cruzadas":
                         line=dict(color=COLORS[idx%len(COLORS)],width=2), mode="lines"))
                     avgs[label] = sum(values)/max(len(values),1)
             fig.update_layout(**PL,
-                legend=dict(bgcolor="#ffffff",font=dict(color="#555"),bordercolor="#e8e8e8",borderwidth=1),
-                yaxis=dict(range=[0,100],gridcolor="#f0f0f0"),
-                xaxis=dict(gridcolor="#f0f0f0"),
+                legend=dict(bgcolor="rgba(0,0,0,0)",font=dict(color="#8896b0")),
+                yaxis=dict(range=[0,100],gridcolor="#f0f2f5"),
+                xaxis=dict(gridcolor="#f0f2f5"),
                 hovermode="x unified",
                 title=f"Interés normalizado (0–100) · \"{kw}\"")
             st.plotly_chart(fig, use_container_width=True)
@@ -964,7 +1008,7 @@ elif modulo == "📡 Tendencias Cruzadas":
                         df_p = df_g[df_g["Período"]==p].copy()
                         df_p["color"] = df_p["Crecimiento"].apply(lambda x: "Subiendo" if x>0 else "Bajando")
                         fig3 = px.bar(df_p, x="Plataforma", y="Crecimiento", color="color",
-                            color_discrete_map={"Subiendo":"#00C08B","Bajando":"#ff6b6b"},
+                            color_discrete_map={"Subiendo":"#4361ee","Bajando":"#ef4444"},
                             title=f"Crecimiento {p} por plataforma", labels={"Crecimiento":"% cambio"})
                         fig3.update_layout(**PL, showlegend=False)
                         st.plotly_chart(fig3, use_container_width=True)
@@ -987,7 +1031,7 @@ elif modulo == "📡 Tendencias Cruzadas":
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;">
-            <div style="font-size:3rem;margin-bottom:16px">📡</div>
+            <div style="font-size:2rem;color:#d0d4e8;font-weight:700">~</div>
             <div style="font-family:Space Grotesk;font-size:1.2rem;color:#555;margin-bottom:8px">
                 Escribe un keyword y tu TrendsMCP API Key
             </div>
