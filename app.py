@@ -12,78 +12,155 @@ st.set_page_config(
     layout="wide",
 )
 
-# ─── ESTILOS ───────────────────────────────────────────────────────────────────
+# ─── ESTILOS TUU ───────────────────────────────────────────────────────────────
+# Paleta TUU.cl: Verde #00C08B · Negro #1A1A1A · Blanco #FFFFFF · Gris #F5F5F5
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #f0f0f5; }
-    .stApp { background: linear-gradient(135deg, #0a0a0f 0%, #12121f 100%); }
-    section[data-testid="stSidebar"] { background: #0d0d1a; border-right: 1px solid rgba(255,255,255,0.06); }
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    /* ── BASE ── */
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1a1a1a; }
+    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #1a1a1a; }
+    .stApp { background: #f7f8fa; }
+
+    /* ── SIDEBAR ── */
+    section[data-testid="stSidebar"] {
+        background: #ffffff;
+        border-right: 1px solid #e8e8e8;
+    }
+    section[data-testid="stSidebar"] .stRadio label { color: #1a1a1a !important; }
+    section[data-testid="stSidebar"] label { color: #555 !important; font-size: 0.82rem; }
+    section[data-testid="stSidebar"] .stMarkdown p { color: #888; font-size: 0.78rem; }
+
+    /* ── METRIC CARDS ── */
     .metric-card {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 16px;
+        background: #ffffff;
+        border: 1px solid #e8e8e8;
+        border-radius: 14px;
         padding: 20px 24px;
         margin-bottom: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
-    .metric-value-tiktok {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700; color: #fe2c55;
-    }
-    .metric-value-ig {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700;
-        background: linear-gradient(90deg, #f09433, #dc2743, #bc1888);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .metric-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+    .metric-value-tiktok  { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-value-ig      { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-value-audio   { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-label { font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+
+    /* ── TAGS ── */
     .tag {
-        display: inline-block;
-        background: rgba(254,44,85,0.15); color: #fe2c55;
-        border-radius: 6px; padding: 2px 8px;
-        font-size: 0.72rem; font-weight: 600; margin-right: 4px;
+        display:inline-block; background:#e8faf4; color:#00A077;
+        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
     }
     .tag-ig {
-        display: inline-block;
-        background: rgba(220,39,67,0.12); color: #e6683c;
-        border-radius: 6px; padding: 2px 8px;
-        font-size: 0.72rem; font-weight: 600; margin-right: 4px;
+        display:inline-block; background:#e8faf4; color:#00A077;
+        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
     }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-    .stTabs [data-baseweb="tab"] { color: #666; font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
-    .stTabs [aria-selected="true"] { color: #fe2c55 !important; }
-    hr { border-color: rgba(255,255,255,0.06); }
+
+    /* ── TABS ── */
+    .stTabs [data-baseweb="tab-list"] { gap:6px; border-bottom:2px solid #e8e8e8; background:transparent; }
+    .stTabs [data-baseweb="tab"] {
+        color:#888; font-family:'Space Grotesk',sans-serif; font-weight:600;
+        background:transparent; border-radius:8px 8px 0 0; padding:8px 16px;
+    }
+    .stTabs [data-baseweb="tab"]:hover { background:#f0faf7; color:#00C08B; }
+    .stTabs [aria-selected="true"] { color:#00C08B !important; border-bottom:2px solid #00C08B !important; }
+
+    /* ── DIVIDERS ── */
+    hr { border-color:#e8e8e8; }
+
+    /* ── INSIGHT BOX ── */
     .insight-box {
-        background: rgba(220,39,67,0.06); border: 1px solid rgba(220,39,67,0.15);
-        border-radius: 12px; padding: 16px 20px; margin-bottom: 12px;
+        background:#f0faf7; border:1px solid #c0ede0;
+        border-radius:12px; padding:16px 20px; margin-bottom:12px;
     }
-    .insight-value { font-size: 1.4rem; font-weight: 700; color: #e6683c; margin-top: 4px; }
-    .insight-desc { font-size: 0.75rem; color: #555; margin-top: 2px; }
-    .metric-value-audio {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700;
-        background: linear-gradient(90deg, #6c63ff, #a855f7, #ec4899);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
+    .insight-value { font-size:1.4rem; font-weight:700; color:#00C08B; margin-top:4px; }
+    .insight-desc  { font-size:0.75rem; color:#666; margin-top:2px; }
+
+    /* ── RANK BADGE ── */
     .rank-badge {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; border-radius: 50%;
-        background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
-        font-family: 'Space Grotesk', sans-serif; font-weight: 700;
-        color: #a855f7; font-size: 0.9rem;
+        display:inline-flex; align-items:center; justify-content:center;
+        width:36px; height:36px; border-radius:50%;
+        background:#e8faf4; border:1.5px solid #00C08B;
+        font-family:'Space Grotesk',sans-serif; font-weight:700;
+        color:#00C08B; font-size:0.9rem;
     }
     .promoted-badge {
-        display: inline-block; background: rgba(236,72,153,0.15);
-        color: #ec4899; border-radius: 6px; padding: 2px 8px;
-        font-size: 0.7rem; font-weight: 700; margin-left: 6px;
+        display:inline-block; background:#fff3e0; color:#e07000;
+        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:700; margin-left:6px;
     }
-    .audio-card {
-        background: rgba(108,99,255,0.04); border: 1px solid rgba(108,99,255,0.1);
-        border-radius: 14px; padding: 16px 20px; margin-bottom: 10px;
-        transition: border-color 0.2s;
+
+    /* ── BUTTONS ── */
+    .stButton > button {
+        background: #00C08B !important; color: #fff !important;
+        border: none !important; border-radius: 10px !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important; padding: 10px 24px !important;
+        width: 100% !important; transition: background 0.2s !important;
     }
-    .audio-card:hover { border-color: rgba(168,85,247,0.4); }
+    .stButton > button:hover { background: #00A077 !important; }
+
+    /* ── INPUTS ── */
+    .stTextInput input, .stSelectbox > div > div, .stMultiSelect > div {
+        border-radius: 8px !important;
+        border: 1.5px solid #e8e8e8 !important;
+        background: #fff !important;
+        color: #1a1a1a !important;
+    }
+    .stTextInput input:focus { border-color: #00C08B !important; }
+
+    /* ── DATAFRAME ── */
+    .stDataFrame { border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e8; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+        padding: 28px 0 16px;
+        border-bottom: 2px solid #e8e8e8;
+        margin-bottom: 28px;
+    }
+    .page-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2rem; font-weight: 700; color: #1a1a1a;
+    }
+    .page-title span { color: #00C08B; }
+    .page-sub { color: #888; font-size: 0.88rem; margin-top: 6px; }
+
+    /* ── FILTER BADGE ── */
+    .filter-badge {
+        display:inline-block; background:#e8faf4; border:1px solid #00C08B;
+        color:#00A077; border-radius:20px; padding:3px 12px;
+        font-size:0.75rem; font-weight:600; margin-right:6px; margin-bottom:8px;
+    }
+
+    /* ── POST / AUDIO CARDS ── */
+    .item-card {
+        background:#fff; border:1px solid #e8e8e8; border-radius:12px;
+        padding:16px 20px; margin-bottom:10px;
+        box-shadow:0 1px 3px rgba(0,0,0,0.04);
+        transition: border-color 0.15s;
+    }
+    .item-card:hover { border-color:#00C08B; }
+    .item-author { font-weight:700; color:#1a1a1a; font-size:0.95rem; }
+    .item-desc   { font-size:0.8rem; color:#888; margin-top:3px; line-height:1.5; }
+
+    /* ── SIDEBAR NAV TITLE ── */
+    .nav-brand {
+        font-family:'Space Grotesk',sans-serif; font-size:1.05rem;
+        font-weight:700; color:#1a1a1a; margin-bottom:2px;
+    }
+    .nav-sub { font-size:0.72rem; color:#aaa; margin-bottom:16px; }
+
+    /* ── RADIO ACTIVE ── */
+    .stRadio [data-testid="stMarkdownContainer"] p { color:#1a1a1a !important; font-size:0.9rem; }
+
+    /* ── MISC ── */
+    .stDownloadButton > button {
+        background:#fff !important; color:#00C08B !important;
+        border:1.5px solid #00C08B !important; border-radius:8px !important;
+        font-weight:600 !important;
+    }
+    .stDownloadButton > button:hover { background:#e8faf4 !important; }
+    .stAlert { border-radius: 10px !important; }
+    .block-container { padding-top: 2rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -138,7 +215,14 @@ def build_hashtags_ig(pais_key, cats_sel):
 
 # ─── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🚀 Social Trends")
+    st.markdown("""
+    <div style="padding:8px 0 4px">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:#1a1a1a;">
+            📊 Social Trends
+        </div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">by TUU · Apify · TrendsMCP</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
 
     modulo = st.radio(
@@ -195,7 +279,7 @@ if modulo == "🎵 TikTok Trends":
 
     st.markdown("""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
             TikTok <span style="color:#fe2c55">Trends</span>
         </div>
         <div style="color:#555; font-size:0.9rem; margin-top:6px;">Datos en tiempo real · Módulo 1</div>
@@ -276,25 +360,25 @@ if modulo == "🎵 TikTok Trends":
                     st.markdown(f"<div style='font-family:Space Grotesk;font-size:1.4rem;font-weight:700;color:rgba(254,44,85,0.6)'>#{i}</div>", unsafe_allow_html=True)
                 with cb:
                     tags_html = " ".join([f'<span class="tag">{t.strip()}</span>' for t in row["hashtags"].split(",") if t.strip()])
-                    st.markdown(f"<div style='font-weight:600;color:#f0f0f5'>{row['nickname']}</div><div style='font-size:0.8rem;color:#666'>{row['descripcion']}</div><div style='margin-top:4px'>{tags_html}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-weight:600;color:#1a1a1a'>{row['nickname']}</div><div style='font-size:0.8rem;color:#666'>{row['descripcion']}</div><div style='margin-top:4px'>{tags_html}</div>", unsafe_allow_html=True)
                 with cc:
-                    st.markdown(f"<div style='text-align:right'><div style='color:#f0f0f5;font-weight:600'>▶ {fmt_number(row['plays'])}</div><div style='color:#fe2c55;font-size:0.85rem'>♥ {fmt_number(row['likes'])}</div><div style='color:#666;font-size:0.78rem'>💬 {fmt_number(row['comentarios'])}</div></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align:right'><div style='color:#1a1a1a;font-weight:600'>▶ {fmt_number(row['plays'])}</div><div style='color:#fe2c55;font-size:0.85rem'>♥ {fmt_number(row['likes'])}</div><div style='color:#666;font-size:0.78rem'>💬 {fmt_number(row['comentarios'])}</div></div>", unsafe_allow_html=True)
                 if row["url"]:
-                    st.markdown(f"<a href='{row['url']}' target='_blank' style='color:#444;font-size:0.72rem;'>Ver en TikTok ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{row['url']}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Ver en TikTok ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
-            PL = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=10,t=40,b=0))
+            PL = dict(paper_bgcolor="#ffffff",plot_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a",margin=dict(l=0,r=10,t=40,b=0))
             ca,cb = st.columns(2)
             with ca:
-                fig = px.bar(df.head(15),x="plays",y="nickname",orientation="h",title="Top 15 · Reproducciones",color="plays",color_continuous_scale=["#1a1a2e","#fe2c55"],labels={"plays":"Plays","nickname":""})
+                fig = px.bar(df.head(15),x="plays",y="nickname",orientation="h",title="Top 15 · Reproducciones",color="plays",color_continuous_scale=["#e8faf4","#00C08B"],labels={"plays":"Plays","nickname":""})
                 fig.update_layout(**PL,coloraxis_showscale=False,yaxis=dict(autorange="reversed"))
-                fig.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig.update_xaxes(gridcolor="#f0f0f0")
                 st.plotly_chart(fig,use_container_width=True)
             with cb:
                 mc = df["musica"].value_counts().head(6).reset_index(); mc.columns=["musica","count"]
-                fig2 = px.pie(mc,values="count",names="musica",title="🎵 Músicas más usadas",hole=0.45,color_discrete_sequence=px.colors.sequential.RdBu)
-                fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5")
+                fig2 = px.pie(mc,values="count",names="musica",title="🎵 Músicas más usadas",hole=0.45,color_discrete_sequence=["#00C08B","#00A077","#007a5a","#e8faf4","#c0ede0"])
+                fig2.update_layout(paper_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a")
                 st.plotly_chart(fig2,use_container_width=True)
 
         with tab3:
@@ -302,7 +386,7 @@ if modulo == "🎵 TikTok Trends":
             st.dataframe(df[[c for c in show if c in df.columns]], use_container_width=True, height=450)
             st.download_button("⬇ CSV", df.to_csv(index=False).encode(), f"tiktok_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     else:
-        st.markdown("<div style='text-align:center;padding:80px 20px;color:#444;'><div style='font-size:3rem'>🎵</div><div style='color:#555;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#fe2c55\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center;padding:80px 20px;color:#ccc;'><div style='font-size:3rem'>🎵</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#fe2c55\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════
@@ -312,7 +396,7 @@ elif modulo == "📸 Instagram Trends":
 
     st.markdown("""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
             Instagram <span style="background:linear-gradient(90deg,#f09433,#dc2743,#bc1888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trends</span>
         </div>
         <div style="color:#555; font-size:0.9rem; margin-top:6px;">Datos en tiempo real · Módulo 2</div>
@@ -396,27 +480,27 @@ elif modulo == "📸 Instagram Trends":
                 with cb:
                     tipo_color = {"Reel":"#bc1888","Imagen":"#f09433","Carousel":"#dc2743"}.get(row["tipo"],"#666")
                     tags_html = " ".join([f'<span class="tag-ig">{t.strip()}</span>' for t in row["hashtags"].split(",") if t.strip()])
-                    st.markdown(f"<div style='font-weight:600;color:#f0f0f5'>{row['autor']} <span style='color:{tipo_color};font-size:0.78rem;font-weight:700'>{row['tipo']}</span></div><div style='font-size:0.8rem;color:#666'>{row['caption']}</div><div style='margin-top:4px'>{tags_html}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-weight:600;color:#1a1a1a'>{row['autor']} <span style='color:{tipo_color};font-size:0.78rem;font-weight:700'>{row['tipo']}</span></div><div style='font-size:0.8rem;color:#666'>{row['caption']}</div><div style='margin-top:4px'>{tags_html}</div>", unsafe_allow_html=True)
                 with cc:
                     views_html = f"<div style='color:#bc1888;font-size:0.78rem'>▶ {fmt_number(row['views'])}</div>" if row["views"]>0 else ""
-                    st.markdown(f"<div style='text-align:right'><div style='color:#f0f0f5;font-weight:600'>♥ {fmt_number(row['likes'])}</div><div style='color:#e6683c;font-size:0.85rem'>💬 {fmt_number(row['comentarios'])}</div>{views_html}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align:right'><div style='color:#1a1a1a;font-weight:600'>♥ {fmt_number(row['likes'])}</div><div style='color:#e6683c;font-size:0.85rem'>💬 {fmt_number(row['comentarios'])}</div>{views_html}</div>", unsafe_allow_html=True)
                 if row["url"]:
                     link = row["url"] if row["url"].startswith("http") else f"https://www.instagram.com/p/{row['url']}"
-                    st.markdown(f"<a href='{link}' target='_blank' style='color:#444;font-size:0.72rem;'>Ver en Instagram ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{link}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Ver en Instagram ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
-            PL = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=10,t=40,b=0))
+            PL = dict(paper_bgcolor="#ffffff",plot_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a",margin=dict(l=0,r=10,t=40,b=0))
             ca,cb = st.columns(2)
             with ca:
-                fig = px.bar(df.head(15),x="engagement",y="autor",orientation="h",title="Top 15 · Engagement",color="engagement",color_continuous_scale=["#1a0a1f","#bc1888"],labels={"engagement":"Engagement","autor":""})
+                fig = px.bar(df.head(15),x="engagement",y="autor",orientation="h",title="Top 15 · Engagement",color="engagement",color_continuous_scale=["#e8faf4","#00C08B"],labels={"engagement":"Engagement","autor":""})
                 fig.update_layout(**PL,coloraxis_showscale=False,yaxis=dict(autorange="reversed"))
-                fig.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig.update_xaxes(gridcolor="#f0f0f0")
                 st.plotly_chart(fig,use_container_width=True)
             with cb:
                 tc = df["tipo"].value_counts().reset_index(); tc.columns=["tipo","count"]
-                fig2 = px.pie(tc,values="count",names="tipo",title="Distribución por tipo",hole=0.5,color_discrete_map={"Reel":"#bc1888","Imagen":"#f09433","Carousel":"#dc2743"})
-                fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5")
+                fig2 = px.pie(tc,values="count",names="tipo",title="Distribución por tipo",hole=0.5,color_discrete_map={"Reel":"#00C08B","Imagen":"#1a1a1a","Carousel":"#7fd4ba"})
+                fig2.update_layout(paper_bgcolor="#ffffff",font_color="#555",title_font_color="#1a1a1a")
                 st.plotly_chart(fig2,use_container_width=True)
 
         with tab3:
@@ -425,26 +509,26 @@ elif modulo == "📸 Instagram Trends":
                 best = df.groupby("tipo")["engagement"].mean()
                 if not best.empty:
                     bt,bv = best.idxmax(), best.max()
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#f0f0f5">🏆 Mejor formato</div><div class="insight-value">{bt}</div><div class="insight-desc">Promedio {fmt_number(int(bv))} interacciones</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">🏆 Mejor formato</div><div class="insight-value">{bt}</div><div class="insight-desc">Promedio {fmt_number(int(bv))} interacciones</div></div>', unsafe_allow_html=True)
                 ratio = df["likes"].sum() / max(df["comentarios"].sum(),1)
-                st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#f0f0f5">💬 Ratio Likes/Comentarios</div><div class="insight-value">{ratio:.0f}:1</div><div class="insight-desc">Por cada comentario hay {ratio:.0f} likes</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">💬 Ratio Likes/Comentarios</div><div class="insight-value">{ratio:.0f}:1</div><div class="insight-desc">Por cada comentario hay {ratio:.0f} likes</div></div>', unsafe_allow_html=True)
             with cb:
                 top_a = df.groupby("autor")["engagement"].sum()
                 if not top_a.empty:
                     ta,tv = top_a.idxmax(), top_a.max()
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#f0f0f5">⭐ Cuenta top</div><div class="insight-value">{ta}</div><div class="insight-desc">{fmt_number(int(tv))} engagement acumulado</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">⭐ Cuenta top</div><div class="insight-value">{ta}</div><div class="insight-desc">{fmt_number(int(tv))} engagement acumulado</div></div>', unsafe_allow_html=True)
                 reels = df[df["tipo"]=="Reel"]["engagement"].mean() if "Reel" in df["tipo"].values else 0
                 otros = df[df["tipo"]!="Reel"]["engagement"].mean() if len(df[df["tipo"]!="Reel"])>0 else 0
                 if reels and otros:
                     diff = ((reels-otros)/max(otros,1))*100
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#f0f0f5">🎬 Reels vs otros</div><div class="insight-value">{diff:+.0f}%</div><div class="insight-desc">Diferencia de engagement</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">🎬 Reels vs otros</div><div class="insight-value">{diff:+.0f}%</div><div class="insight-desc">Diferencia de engagement</div></div>', unsafe_allow_html=True)
 
         with tab4:
             show = ["autor","tipo","likes","comentarios","views","engagement","hashtag_src","fecha","url"]
             st.dataframe(df[[c for c in show if c in df.columns]], use_container_width=True, height=450)
             st.download_button("⬇ CSV", df.to_csv(index=False).encode(), f"instagram_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     else:
-        st.markdown("<div style='text-align:center;padding:80px 20px;color:#444;'><div style='font-size:3rem'>📸</div><div style='color:#555;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#dc2743\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center;padding:80px 20px;color:#ccc;'><div style='font-size:3rem'>📸</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#dc2743\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════
@@ -457,7 +541,7 @@ elif modulo == "🔊 Audio Trends":
 
     st.markdown(f"""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
             🔊 Audio <span style="background:linear-gradient(90deg,#6c63ff,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trends</span>
         </div>
         <div style="color:#555; font-size:0.9rem; margin-top:6px;">Sonidos virales en TikTok · {pais_sel} · Módulo 3</div>
@@ -611,7 +695,7 @@ elif modulo == "🔊 Audio Trends":
                 with cb:
                     st.markdown(f"""
                     <div style="padding-top:4px">
-                        <div style="font-family:Space Grotesk;font-weight:700;color:#f0f0f5;font-size:1rem">
+                        <div style="font-family:Space Grotesk;font-weight:700;color:#1a1a1a;font-size:1rem">
                             {row['titulo']} {promo_html}
                         </div>
                         <div style="color:#888;font-size:0.82rem;margin-top:2px">
@@ -629,7 +713,7 @@ elif modulo == "🔊 Audio Trends":
                     """, unsafe_allow_html=True)
 
                 if row.get("url_sound"):
-                    st.markdown(f"<a href='{row['url_sound']}' target='_blank' style='color:#444;font-size:0.72rem;'>Escuchar ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{row['url_sound']}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Escuchar ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         # ── TAB 2: CHARTS ──
@@ -641,11 +725,11 @@ elif modulo == "🔊 Audio Trends":
             fig1 = px.bar(
                 df_au.head(15), x="usos", y="titulo", orientation="h",
                 title="🎵 Top sonidos por cantidad de videos",
-                color="usos", color_continuous_scale=["#1a1030","#a855f7"],
+                color="usos", color_continuous_scale=["#e8faf4","#00C08B"],
                 labels={"usos":"Videos","titulo":""},
             )
             fig1.update_layout(**PL, coloraxis_showscale=False, yaxis=dict(autorange="reversed"))
-            fig1.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+            fig1.update_xaxes(gridcolor="#f0f0f0")
             st.plotly_chart(fig1, use_container_width=True)
 
             ca, cb = st.columns(2)
@@ -654,12 +738,12 @@ elif modulo == "🔊 Audio Trends":
                 fig2 = px.histogram(
                     df_au, x="duracion", nbins=10,
                     title="⏱ Distribución de duración (seg)",
-                    color_discrete_sequence=["#6c63ff"],
+                    color_discrete_sequence=["#00C08B"],
                     labels={"duracion":"Duración (s)"},
                 )
                 fig2.update_layout(**PL)
-                fig2.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
-                fig2.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig2.update_xaxes(gridcolor="#f0f0f0")
+                fig2.update_yaxes(gridcolor="#f0f0f0")
                 st.plotly_chart(fig2, use_container_width=True)
 
             with cb:
@@ -667,12 +751,12 @@ elif modulo == "🔊 Audio Trends":
                     df_au, x="usos", y="likes_total",
                     hover_name="titulo", size="usos",
                     title="🎯 Usos vs Likes totales",
-                    color_discrete_sequence=["#a855f7"],
+                    color_discrete_sequence=["#00C08B"],
                     labels={"usos":"Videos usando el audio","likes_total":"Likes acumulados"},
                 )
                 fig3.update_layout(**PL)
-                fig3.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
-                fig3.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig3.update_xaxes(gridcolor="#f0f0f0")
+                fig3.update_yaxes(gridcolor="#f0f0f0")
                 st.plotly_chart(fig3, use_container_width=True)
 
         # ── TAB 3: TABLA ──
@@ -694,12 +778,12 @@ elif modulo == "🔊 Audio Trends":
 
     else:
         st.markdown(f"""
-        <div style="text-align:center;padding:80px 20px;color:#444;">
+        <div style="text-align:center;padding:80px 20px;color:#ccc;">
             <div style="font-size:3rem">🔊</div>
-            <div style="color:#555;margin-top:12px;font-family:Space Grotesk;font-size:1.1rem">
+            <div style="color:#888;margin-top:12px;font-family:Space Grotesk;font-size:1.1rem">
                 Ingresa tu token y pulsa <strong style="color:#a855f7">Buscar Trends</strong>
             </div>
-            <div style="color:#333;font-size:0.82rem;margin-top:8px">
+            <div style="color:#aaa;font-size:0.82rem;margin-top:8px">
                 Extrae los audios más virales en TikTok {pais_sel} via TikTok Creative Center
             </div>
         </div>
@@ -713,7 +797,7 @@ elif modulo == "📡 Tendencias Cruzadas":
 
     st.markdown("""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
             📡 Tendencias <span style="background:linear-gradient(90deg,#3b82f6,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Cruzadas</span>
         </div>
         <div style="color:#555; font-size:0.9rem; margin-top:6px;">Google · TikTok · YouTube · Reddit · en una sola vista · Módulo 4</div>
@@ -813,7 +897,7 @@ elif modulo == "📡 Tendencias Cruzadas":
     cx_data   = st.session_state.cx_data
     cx_growth = st.session_state.cx_growth
     kw        = st.session_state.cx_keyword
-    COLORS    = ["#3b82f6","#fe2c55","#ef4444","#f97316","#10b981","#8b5cf6"]
+    COLORS    = ["#00C08B","#1a1a1a","#7fd4ba","#00A077","#c0ede0","#555555"]
     PL        = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",
                      font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=0,t=40,b=0))
 
@@ -846,15 +930,15 @@ elif modulo == "📡 Tendencias Cruzadas":
                         line=dict(color=COLORS[idx%len(COLORS)],width=2), mode="lines"))
                     avgs[label] = sum(values)/max(len(values),1)
             fig.update_layout(**PL,
-                legend=dict(bgcolor="rgba(0,0,0,0)",font=dict(color="#aaa")),
-                yaxis=dict(range=[0,100],gridcolor="rgba(255,255,255,0.05)"),
-                xaxis=dict(gridcolor="rgba(255,255,255,0.03)"),
+                legend=dict(bgcolor="#ffffff",font=dict(color="#555"),bordercolor="#e8e8e8",borderwidth=1),
+                yaxis=dict(range=[0,100],gridcolor="#f0f0f0"),
+                xaxis=dict(gridcolor="#f0f0f0"),
                 hovermode="x unified",
                 title=f"Interés normalizado (0–100) · \"{kw}\"")
             st.plotly_chart(fig, use_container_width=True)
             if avgs:
                 top = max(avgs, key=avgs.get)
-                st.markdown(f'<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:14px 20px;margin-top:8px"><span style="color:#3b82f6;font-weight:700">💡 Insight:</span> <span style="color:#aaa;font-size:0.9rem;"><strong style="color:#f0f0f5">"{kw}"</strong> tiene mayor tracción en <strong style="color:#f0f0f5">{top}</strong> con interés promedio <strong style="color:#f0f0f5">{avgs[top]:.0f}/100</strong>.</span></div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:14px 20px;margin-top:8px"><span style="color:#3b82f6;font-weight:700">💡 Insight:</span> <span style="color:#aaa;font-size:0.9rem;"><strong style="color:#1a1a1a">"{kw}"</strong> tiene mayor tracción en <strong style="color:#1a1a1a">{top}</strong> con interés promedio <strong style="color:#1a1a1a">{avgs[top]:.0f}/100</strong>.</span></div>', unsafe_allow_html=True)
 
         with tab2:
             if cx_growth:
@@ -870,7 +954,7 @@ elif modulo == "📡 Tendencias Cruzadas":
                     try:
                         pivot = df_g.pivot(index="Plataforma",columns="Período",values="Crecimiento")
                         fig2 = px.imshow(pivot, title=f"Heatmap de crecimiento · \"{kw}\"",
-                            color_continuous_scale="RdYlGn", aspect="auto", text_auto=".1f")
+                            color_continuous_scale=["#ff6b6b","#ffffff","#00C08B"], aspect="auto", text_auto=".1f")
                         fig2.update_layout(**PL)
                         st.plotly_chart(fig2, use_container_width=True)
                     except Exception:
@@ -881,7 +965,7 @@ elif modulo == "📡 Tendencias Cruzadas":
                         df_p = df_g[df_g["Período"]==p].copy()
                         df_p["color"] = df_p["Crecimiento"].apply(lambda x: "Subiendo" if x>0 else "Bajando")
                         fig3 = px.bar(df_p, x="Plataforma", y="Crecimiento", color="color",
-                            color_discrete_map={"Subiendo":"#4ade80","Bajando":"#f87171"},
+                            color_discrete_map={"Subiendo":"#00C08B","Bajando":"#ff6b6b"},
                             title=f"Crecimiento {p} por plataforma", labels={"Crecimiento":"% cambio"})
                         fig3.update_layout(**PL, showlegend=False)
                         st.plotly_chart(fig3, use_container_width=True)
@@ -908,13 +992,13 @@ elif modulo == "📡 Tendencias Cruzadas":
             <div style="font-family:Space Grotesk;font-size:1.2rem;color:#555;margin-bottom:8px">
                 Escribe un keyword y tu TrendsMCP API Key
             </div>
-            <div style="color:#333;font-size:0.82rem;margin-bottom:24px">
+            <div style="color:#aaa;font-size:0.82rem;margin-bottom:24px">
                 Compara el interés en Google, TikTok, YouTube y Reddit en una sola vista normalizada
             </div>
             <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);
                  border-radius:12px;padding:16px 24px;max-width:380px;margin:0 auto;text-align:left">
                 <div style="color:#3b82f6;font-weight:700;font-size:0.82rem;margin-bottom:6px">🆓 API KEY GRATIS</div>
-                <div style="color:#aaa;font-size:0.82rem">Ve a <strong style="color:#f0f0f5">trendsmcp.ai</strong>, ingresa tu email y recibe tu key al instante.<br>100 requests/mes · Sin tarjeta de crédito</div>
+                <div style="color:#aaa;font-size:0.82rem">Ve a <strong style="color:#1a1a1a">trendsmcp.ai</strong>, ingresa tu email y recibe tu key al instante.<br>100 requests/mes · Sin tarjeta de crédito</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
