@@ -307,7 +307,7 @@ if modulo == "🎵 TikTok Trends":
 # ══════════════════════════════════════════════════════
 #  MÓDULO 2 — INSTAGRAM
 # ══════════════════════════════════════════════════════
-else:
+elif modulo == "📸 Instagram Trends":
 
     st.markdown("""
     <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
