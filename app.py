@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 import re
 
@@ -142,7 +143,7 @@ with st.sidebar:
 
     modulo = st.radio(
         "Módulo",
-        ["🎵 TikTok Trends", "📸 Instagram Trends", "🔊 Audio Trends"],
+        ["🎵 TikTok Trends", "📸 Instagram Trends", "🔊 Audio Trends", "📡 Tendencias Cruzadas"],
         index=0,
     )
 
@@ -700,6 +701,196 @@ elif modulo == "🔊 Audio Trends":
             </div>
             <div style="color:#333;font-size:0.82rem;margin-top:8px">
                 Extrae los audios más virales en TikTok {pais_sel} via TikTok Creative Center
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════
+#  MÓDULO 4 — TENDENCIAS CRUZADAS (TrendsMCP)
+# ══════════════════════════════════════════════════════
+elif modulo == "📡 Tendencias Cruzadas":
+
+    st.markdown("""
+    <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#f0f0f5;">
+            📡 Tendencias <span style="background:linear-gradient(90deg,#3b82f6,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Cruzadas</span>
+        </div>
+        <div style="color:#555; font-size:0.9rem; margin-top:6px;">Google · TikTok · YouTube · Reddit · en una sola vista · Módulo 4</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    for k in ["cx_data","cx_err","cx_keyword","cx_growth"]:
+        if k not in st.session_state: st.session_state[k] = None
+
+    col_k, col_t = st.columns([3,2])
+    with col_k:
+        keyword = st.text_input("🔎 Keyword a analizar", placeholder="ej: emprendimiento, startup chile, marketing digital...")
+    with col_t:
+        trends_key = st.text_input("TrendsMCP API Key", type="password", placeholder="tmcp_xxxxxxxxxxxx", help="Gratis en trendsmcp.ai · 100 req/mes")
+
+    FUENTES = {
+        "🔍 Google Search": "google search",
+        "🎵 TikTok":        "tiktok",
+        "▶️ YouTube":       "youtube",
+        "💬 Reddit":        "reddit",
+        "🛒 Amazon":        "amazon",
+    }
+    fuentes_sel = st.multiselect("Plataformas a comparar", list(FUENTES.keys()),
+                                  default=["🔍 Google Search","🎵 TikTok","▶️ YouTube","💬 Reddit"])
+    periodo_cx = st.select_slider("Período histórico", options=["1M","3M","6M","12M","2Y","5Y"], value="12M")
+    buscar_cx  = st.button("📡 Analizar tendencia", disabled=not keyword or not trends_key or not fuentes_sel)
+
+    st.markdown("---")
+
+    def fetch_series(key, kw, source, period):
+        try:
+            r = requests.get("https://api.trendsmcp.ai/v1/trends",
+                headers={"Authorization": f"Bearer {key}"},
+                params={"keyword": kw, "source": source, "data_mode": "weekly", "period": period},
+                timeout=20)
+            if r.status_code == 200:
+                d = r.json()
+                return d if isinstance(d, list) else (d.get("data") or d.get("results") or d.get("series") or [])
+        except Exception:
+            pass
+        return []
+
+    def fetch_growth(key, kw, source):
+        try:
+            r = requests.get("https://api.trendsmcp.ai/v1/growth",
+                headers={"Authorization": f"Bearer {key}"},
+                params={"keyword": kw, "source": source, "percent_growth": "1M,3M,12M"},
+                timeout=15)
+            if r.status_code == 200:
+                return r.json()
+        except Exception:
+            pass
+        return {}
+
+    if buscar_cx and keyword and trends_key and fuentes_sel:
+        with st.spinner(f"📡 Comparando '{keyword}' en {len(fuentes_sel)} plataformas..."):
+            all_series, all_growth, errors = {}, {}, []
+            for label in fuentes_sel:
+                src    = FUENTES[label]
+                series = fetch_series(trends_key, keyword, src, periodo_cx)
+                if series: all_series[label] = series
+                else: errors.append(label)
+                growth = fetch_growth(trends_key, keyword, src)
+                if growth: all_growth[label] = growth
+            st.session_state.cx_data    = all_series
+            st.session_state.cx_growth  = all_growth
+            st.session_state.cx_keyword = keyword
+            st.session_state.cx_err     = errors if errors else None
+
+    if st.session_state.cx_err:
+        st.warning(f"⚠️ Sin datos para: {', '.join(st.session_state.cx_err)} — puede ser límite de requests o keyword no encontrada.")
+
+    cx_data   = st.session_state.cx_data
+    cx_growth = st.session_state.cx_growth
+    kw        = st.session_state.cx_keyword
+    COLORS    = ["#3b82f6","#fe2c55","#ef4444","#f97316","#10b981","#8b5cf6"]
+    PL        = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",
+                     font_color="#aaa",title_font_color="#f0f0f5",margin=dict(l=0,r=0,t=40,b=0))
+
+    def parse_series(series):
+        dates, values = [], []
+        for pt in series:
+            if isinstance(pt, dict):
+                d = pt.get("date") or pt.get("week") or pt.get("timestamp","")
+                v = pt.get("value") or pt.get("interest") or pt.get("score") or 0
+            elif isinstance(pt,(list,tuple)) and len(pt)>=2:
+                d, v = pt[0], pt[1]
+            else:
+                continue
+            dates.append(d); values.append(float(v) if v else 0)
+        return dates, values
+
+    if cx_data and kw:
+        st.markdown(f"### Resultados para **\"{kw}\"**")
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        tab1, tab2, tab3 = st.tabs(["📈 Series de tiempo","🏆 Crecimiento","📋 Datos"])
+
+        with tab1:
+            fig = go.Figure()
+            avgs = {}
+            for idx,(label,series) in enumerate(cx_data.items()):
+                dates, values = parse_series(series)
+                if dates:
+                    fig.add_trace(go.Scatter(x=dates, y=values, name=label,
+                        line=dict(color=COLORS[idx%len(COLORS)],width=2), mode="lines"))
+                    avgs[label] = sum(values)/max(len(values),1)
+            fig.update_layout(**PL,
+                legend=dict(bgcolor="rgba(0,0,0,0)",font=dict(color="#aaa")),
+                yaxis=dict(range=[0,100],gridcolor="rgba(255,255,255,0.05)"),
+                xaxis=dict(gridcolor="rgba(255,255,255,0.03)"),
+                hovermode="x unified",
+                title=f"Interés normalizado (0–100) · \"{kw}\"")
+            st.plotly_chart(fig, use_container_width=True)
+            if avgs:
+                top = max(avgs, key=avgs.get)
+                st.markdown(f'<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:14px 20px;margin-top:8px"><span style="color:#3b82f6;font-weight:700">💡 Insight:</span> <span style="color:#aaa;font-size:0.9rem;"><strong style="color:#f0f0f5">"{kw}"</strong> tiene mayor tracción en <strong style="color:#f0f0f5">{top}</strong> con interés promedio <strong style="color:#f0f0f5">{avgs[top]:.0f}/100</strong>.</span></div>', unsafe_allow_html=True)
+
+        with tab2:
+            if cx_growth:
+                rows_g = []
+                for label, gdata in cx_growth.items():
+                    results = gdata.get("results") or gdata.get("data") or []
+                    for r in (results if isinstance(results,list) else []):
+                        if isinstance(r,dict):
+                            rows_g.append({"Plataforma":label,"Período":r.get("period","—"),
+                                           "Crecimiento":r.get("growth") or r.get("value") or 0})
+                if rows_g:
+                    df_g = pd.DataFrame(rows_g)
+                    try:
+                        pivot = df_g.pivot(index="Plataforma",columns="Período",values="Crecimiento")
+                        fig2 = px.imshow(pivot, title=f"Heatmap de crecimiento · \"{kw}\"",
+                            color_continuous_scale="RdYlGn", aspect="auto", text_auto=".1f")
+                        fig2.update_layout(**PL)
+                        st.plotly_chart(fig2, use_container_width=True)
+                    except Exception:
+                        pass
+                    periodos = df_g["Período"].unique().tolist()
+                    if periodos:
+                        p = st.selectbox("Ver período", periodos, index=0)
+                        df_p = df_g[df_g["Período"]==p].copy()
+                        df_p["color"] = df_p["Crecimiento"].apply(lambda x: "Subiendo" if x>0 else "Bajando")
+                        fig3 = px.bar(df_p, x="Plataforma", y="Crecimiento", color="color",
+                            color_discrete_map={"Subiendo":"#4ade80","Bajando":"#f87171"},
+                            title=f"Crecimiento {p} por plataforma", labels={"Crecimiento":"% cambio"})
+                        fig3.update_layout(**PL, showlegend=False)
+                        st.plotly_chart(fig3, use_container_width=True)
+                else:
+                    st.info("No hay datos de crecimiento disponibles.")
+            else:
+                st.info("Sin datos de crecimiento. Prueba otro keyword.")
+
+        with tab3:
+            for label, series in cx_data.items():
+                with st.expander(f"{label} — {len(series)} puntos"):
+                    dates, values = parse_series(series)
+                    if dates:
+                        df_raw2 = pd.DataFrame({"fecha":dates,"valor":values})
+                        st.dataframe(df_raw2, use_container_width=True, height=220)
+                        st.download_button(f"⬇ CSV {label}",
+                            df_raw2.to_csv(index=False).encode(),
+                            f"cx_{kw}_{label.replace(' ','_')}_{datetime.now().strftime('%Y%m%d')}.csv",
+                            "text/csv", key=f"dl_{label}")
+    else:
+        st.markdown("""
+        <div style="text-align:center;padding:60px 20px;">
+            <div style="font-size:3rem;margin-bottom:16px">📡</div>
+            <div style="font-family:Space Grotesk;font-size:1.2rem;color:#555;margin-bottom:8px">
+                Escribe un keyword y tu TrendsMCP API Key
+            </div>
+            <div style="color:#333;font-size:0.82rem;margin-bottom:24px">
+                Compara el interés en Google, TikTok, YouTube y Reddit en una sola vista normalizada
+            </div>
+            <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);
+                 border-radius:12px;padding:16px 24px;max-width:380px;margin:0 auto;text-align:left">
+                <div style="color:#3b82f6;font-weight:700;font-size:0.82rem;margin-bottom:6px">🆓 API KEY GRATIS</div>
+                <div style="color:#aaa;font-size:0.82rem">Ve a <strong style="color:#f0f0f5">trendsmcp.ai</strong>, ingresa tu email y recibe tu key al instante.<br>100 requests/mes · Sin tarjeta de crédito</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
