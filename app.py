@@ -467,13 +467,16 @@ elif modulo == "🔊 Audio Trends":
         if k not in st.session_state: st.session_state[k] = None
 
     if fetch_btn and api_token:
-        actor_id = "automation-lab~tiktok-trends-scraper"
+        # Estrategia: extraer videos trending del país y agregar audios por frecuencia de uso
+        actor_id = "clockworks~free-tiktok-scraper"
         url = f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items"
+        hp = pais_info["hashtag"]
         payload = {
-            "dataTypes": ["sounds"],
-            "countryCode": country_code,
-            "period": periodo_val,
-            "maxItems": max_items_audio,
+            "searchQueries": [f"#{hp}", f"trending {hp}", f"#fyp{hp}", "#chile"],
+            "maxItems": max(max_items_audio * 3, 60),
+            "resultsPerPage": max(max_items_audio * 3, 60),
+            "shouldDownloadVideos": False,
+            "shouldDownloadCovers": False,
         }
         with st.spinner(f"⏳ Extrayendo audios trending en {pais_sel}..."):
             try:
@@ -482,26 +485,49 @@ elif modulo == "🔊 Audio Trends":
                 resp.raise_for_status()
                 raw = resp.json()
 
-                rows = []
+                # Agregar audios por frecuencia
+                music_data = {}
                 for item in raw:
-                    # el actor puede devolver distintas estructuras
-                    sound = item.get("sound") or item.get("music") or item
+                    music = item.get("musicMeta") or {}
+                    mid   = music.get("musicId") or music.get("musicName", "")
+                    if not mid: continue
+                    name  = music.get("musicName","") or music.get("musicOriginal","Sonido original")
+                    author= music.get("musicAuthor","") or "—"
+                    dur   = music.get("musicDuration", 0) or 0
+                    play  = music.get("musicPlay","") or ""
+                    if mid not in music_data:
+                        music_data[mid] = {
+                            "titulo":   name,
+                            "artista":  author,
+                            "duracion": dur,
+                            "url_sound": play,
+                            "usos":     0,
+                            "likes_total": 0,
+                            "plays_total": 0,
+                        }
+                    music_data[mid]["usos"]        += 1
+                    music_data[mid]["likes_total"] += item.get("diggCount", 0) or 0
+                    music_data[mid]["plays_total"] += item.get("playCount", 0) or 0
+
+                rows = []
+                for rank, (mid, d) in enumerate(
+                    sorted(music_data.items(), key=lambda x: x[1]["usos"], reverse=True), 1
+                ):
                     rows.append({
-                        "rank":       item.get("rank") or item.get("position") or len(rows)+1,
-                        "titulo":     sound.get("title") or sound.get("name") or item.get("title","—"),
-                        "artista":    sound.get("authorName") or sound.get("author") or item.get("authorName","—"),
-                        "duracion":   sound.get("duration") or item.get("duration", 0),
-                        "promocionado": bool(item.get("isPromoted") or item.get("promoted", False)),
-                        "usos":       item.get("useCount") or item.get("videoCount") or 0,
-                        "url_sound":  sound.get("playUrl") or sound.get("url") or item.get("link",""),
-                        "cover":      sound.get("coverThumb") or sound.get("coverUrl") or "",
-                        "trend_7d":   item.get("trend7") or item.get("trendChange7") or 0,
-                        "trend_30d":  item.get("trend30") or item.get("trendChange30") or 0,
+                        "rank":        rank,
+                        "titulo":      d["titulo"] or "Sonido original",
+                        "artista":     d["artista"],
+                        "duracion":    d["duracion"],
+                        "usos":        d["usos"],
+                        "likes_total": d["likes_total"],
+                        "plays_total": d["plays_total"],
+                        "url_sound":   d["url_sound"],
+                        "promocionado": False,
+                        "trend_7d":    0,
+                        "trend_30d":   0,
                     })
 
-                df_au = pd.DataFrame(rows)
-                if not df_au.empty:
-                    df_au = df_au.sort_values("rank").reset_index(drop=True)
+                df_au = pd.DataFrame(rows[:max_items_audio]) if rows else pd.DataFrame()
                 st.session_state.au_df  = df_au
                 st.session_state.au_err = None
             except requests.exceptions.HTTPError:
@@ -520,14 +546,15 @@ elif modulo == "🔊 Audio Trends":
 
         # KPIs
         c1,c2,c3,c4 = st.columns(4)
-        promoted_count = df_au["promocionado"].sum() if "promocionado" in df_au.columns else 0
-        avg_dur = df_au["duracion"].mean() if "duracion" in df_au.columns else 0
-        top_usos = df_au["usos"].max() if "usos" in df_au.columns else 0
+        top_usos    = df_au["usos"].max() if "usos" in df_au.columns else 0
+        avg_dur     = df_au["duracion"].mean() if "duracion" in df_au.columns else 0
+        top_likes   = df_au["likes_total"].max() if "likes_total" in df_au.columns else 0
+        top_plays   = df_au["plays_total"].max() if "plays_total" in df_au.columns else 0
         for col,(val,lbl) in zip([c1,c2,c3,c4],[
-            (len(df_au),           "Sonidos analizados"),
-            (fmt_number(top_usos), "Máx. usos en videos"),
-            (f"{avg_dur:.0f}s",    "Duración promedio"),
-            (int(promoted_count),  "Sonidos promocionados"),
+            (len(df_au),              "Audios únicos"),
+            (fmt_number(top_usos),    "Máx. videos con este audio"),
+            (fmt_number(top_likes),   "Likes del audio top"),
+            (f"{avg_dur:.0f}s",       "Duración promedio"),
         ]):
             with col:
                 st.markdown(f'<div class="metric-card"><div class="metric-value-audio">{val}</div><div class="metric-label">{lbl}</div></div>', unsafe_allow_html=True)
@@ -595,9 +622,9 @@ elif modulo == "🔊 Audio Trends":
                 # Duración distribución
                 fig2 = px.histogram(
                     df_au, x="duracion", nbins=10,
-                    title="⏱ Distribución de duración de audios (seg)",
+                    title="⏱ Distribución de duración (seg)",
                     color_discrete_sequence=["#6c63ff"],
-                    labels={"duracion":"Duración (s)","count":"Cantidad"},
+                    labels={"duracion":"Duración (s)"},
                 )
                 fig2.update_layout(**PL)
                 fig2.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
@@ -605,45 +632,27 @@ elif modulo == "🔊 Audio Trends":
                 st.plotly_chart(fig2, use_container_width=True)
 
             with cb:
-                # Promocionado vs orgánico
-                if "promocionado" in df_au.columns:
-                    promo_df = df_au["promocionado"].value_counts().reset_index()
-                    promo_df.columns = ["tipo","count"]
-                    promo_df["tipo"] = promo_df["tipo"].map({True:"Promocionado",False:"Orgánico"})
-                    fig3 = px.pie(
-                        promo_df, values="count", names="tipo",
-                        title="📢 Orgánico vs Promocionado",
-                        color_discrete_map={"Promocionado":"#ec4899","Orgánico":"#6c63ff"},
-                        hole=0.5,
-                    )
-                    fig3.update_layout(paper_bgcolor="rgba(0,0,0,0)",font_color="#aaa",title_font_color="#f0f0f5")
-                    st.plotly_chart(fig3, use_container_width=True)
-
-            # Trend chart si hay datos
-            if df_au["trend_7d"].any():
-                df_trend = df_au[df_au["trend_7d"] != 0].copy()
-                df_trend["color"] = df_trend["trend_7d"].apply(lambda x: "Subiendo" if x > 0 else "Bajando")
-                fig4 = px.bar(
-                    df_trend.head(15), x="titulo", y="trend_7d",
-                    color="color",
-                    color_discrete_map={"Subiendo":"#4ade80","Bajando":"#f87171"},
-                    title="📈 Tendencia 7 días por sonido",
-                    labels={"trend_7d":"Cambio %","titulo":""},
+                fig3 = px.scatter(
+                    df_au, x="usos", y="likes_total",
+                    hover_name="titulo", size="usos",
+                    title="🎯 Usos vs Likes totales",
+                    color_discrete_sequence=["#a855f7"],
+                    labels={"usos":"Videos usando el audio","likes_total":"Likes acumulados"},
                 )
-                fig4.update_layout(**PL)
-                fig4.update_xaxes(tickangle=-35, gridcolor="rgba(0,0,0,0)")
-                fig4.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
-                st.plotly_chart(fig4, use_container_width=True)
+                fig3.update_layout(**PL)
+                fig3.update_xaxes(gridcolor="rgba(255,255,255,0.05)")
+                fig3.update_yaxes(gridcolor="rgba(255,255,255,0.05)")
+                st.plotly_chart(fig3, use_container_width=True)
 
         # ── TAB 3: TABLA ──
         with tab3:
-            show = ["rank","titulo","artista","usos","duracion","promocionado","trend_7d","trend_30d","url_sound"]
+            show = ["rank","titulo","artista","usos","likes_total","plays_total","duracion","url_sound"]
             st.dataframe(
                 df_au[[c for c in show if c in df_au.columns]].rename(columns={
                     "rank":"Rank","titulo":"Título","artista":"Artista",
-                    "usos":"Videos","duracion":"Duración (s)",
-                    "promocionado":"Promocionado","trend_7d":"Trend 7d %",
-                    "trend_30d":"Trend 30d %","url_sound":"URL Audio",
+                    "usos":"Videos con este audio","likes_total":"Likes acumulados",
+                    "plays_total":"Plays acumulados","duracion":"Duración (s)",
+                    "url_sound":"URL Audio",
                 }),
                 use_container_width=True, height=450,
             )
