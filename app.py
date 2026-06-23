@@ -13,154 +13,159 @@ st.set_page_config(
 )
 
 # ─── ESTILOS TUU ───────────────────────────────────────────────────────────────
-# Paleta TUU.cl: Verde #00C08B · Negro #1A1A1A · Blanco #FFFFFF · Gris #F5F5F5
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
     /* ── BASE ── */
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1a1a1a; }
-    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #1a1a1a; }
-    .stApp { background: #f7f8fa; }
+    html, body, [class*="css"], .stApp { background-color: #f7f8fa !important; }
+    * { font-family: 'Inter', sans-serif !important; }
+    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif !important; color: #1a1a1a !important; }
+    p, span, div, label { color: #1a1a1a; }
 
     /* ── SIDEBAR ── */
-    section[data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #e8e8e8;
-    }
-    section[data-testid="stSidebar"] .stRadio label { color: #1a1a1a !important; }
-    section[data-testid="stSidebar"] label { color: #555 !important; font-size: 0.82rem; }
-    section[data-testid="stSidebar"] .stMarkdown p { color: #888; font-size: 0.78rem; }
+    section[data-testid="stSidebar"] > div { background: #ffffff !important; border-right: 1px solid #e8e8e8; }
+    section[data-testid="stSidebar"] * { color: #1a1a1a !important; }
+    section[data-testid="stSidebar"] small, section[data-testid="stSidebar"] .stMarkdown p { color: #999 !important; font-size: 0.75rem !important; }
 
-    /* ── METRIC CARDS ── */
-    .metric-card {
-        background: #ffffff;
-        border: 1px solid #e8e8e8;
-        border-radius: 14px;
-        padding: 20px 24px;
-        margin-bottom: 12px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    }
-    .metric-value-tiktok  { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-value-ig      { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-value-audio   { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
-    .metric-label { font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+    /* ── RADIO BUTTONS ── */
+    .stRadio [data-testid="stMarkdownContainer"] p { color: #333 !important; font-size: 0.88rem !important; font-weight: 500; }
+    div[role="radiogroup"] label { gap: 8px; }
+    div[role="radiogroup"] label:hover div[data-testid="stMarkdownContainer"] p { color: #00C08B !important; }
 
-    /* ── TAGS ── */
-    .tag {
-        display:inline-block; background:#e8faf4; color:#00A077;
-        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
+    /* ── MULTISELECT — override red tags ── */
+    [data-baseweb="tag"] {
+        background-color: #e8faf4 !important;
+        border: 1px solid #00C08B !important;
+        border-radius: 6px !important;
     }
-    .tag-ig {
-        display:inline-block; background:#e8faf4; color:#00A077;
-        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
-    }
+    [data-baseweb="tag"] span { color: #00A077 !important; font-weight: 600 !important; font-size: 0.75rem !important; }
+    [data-baseweb="tag"] button svg { fill: #00A077 !important; }
+    [data-baseweb="select"] > div { border-color: #e8e8e8 !important; background: #fff !important; border-radius: 8px !important; }
 
-    /* ── TABS ── */
-    .stTabs [data-baseweb="tab-list"] { gap:6px; border-bottom:2px solid #e8e8e8; background:transparent; }
-    .stTabs [data-baseweb="tab"] {
-        color:#888; font-family:'Space Grotesk',sans-serif; font-weight:600;
-        background:transparent; border-radius:8px 8px 0 0; padding:8px 16px;
+    /* ── INPUTS ── */
+    .stTextInput input {
+        background: #ffffff !important;
+        border: 1.5px solid #e8e8e8 !important;
+        border-radius: 8px !important;
+        color: #1a1a1a !important;
     }
-    .stTabs [data-baseweb="tab"]:hover { background:#f0faf7; color:#00C08B; }
-    .stTabs [aria-selected="true"] { color:#00C08B !important; border-bottom:2px solid #00C08B !important; }
+    .stTextInput input:focus { border-color: #00C08B !important; box-shadow: 0 0 0 2px rgba(0,192,139,0.12) !important; }
+    .stSelectbox [data-baseweb="select"] > div { background: #fff !important; border: 1.5px solid #e8e8e8 !important; border-radius: 8px !important; }
 
-    /* ── DIVIDERS ── */
-    hr { border-color:#e8e8e8; }
-
-    /* ── INSIGHT BOX ── */
-    .insight-box {
-        background:#f0faf7; border:1px solid #c0ede0;
-        border-radius:12px; padding:16px 20px; margin-bottom:12px;
-    }
-    .insight-value { font-size:1.4rem; font-weight:700; color:#00C08B; margin-top:4px; }
-    .insight-desc  { font-size:0.75rem; color:#666; margin-top:2px; }
-
-    /* ── RANK BADGE ── */
-    .rank-badge {
-        display:inline-flex; align-items:center; justify-content:center;
-        width:36px; height:36px; border-radius:50%;
-        background:#e8faf4; border:1.5px solid #00C08B;
-        font-family:'Space Grotesk',sans-serif; font-weight:700;
-        color:#00C08B; font-size:0.9rem;
-    }
-    .promoted-badge {
-        display:inline-block; background:#fff3e0; color:#e07000;
-        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:700; margin-left:6px;
-    }
+    /* ── SLIDER ── */
+    .stSlider [data-baseweb="slider"] div[role="slider"] { background: #00C08B !important; border-color: #00C08B !important; }
+    .stSlider [data-testid="stSlider"] > div > div > div { background: #00C08B !important; }
 
     /* ── BUTTONS ── */
     .stButton > button {
         background: #00C08B !important; color: #fff !important;
         border: none !important; border-radius: 10px !important;
         font-family: 'Space Grotesk', sans-serif !important;
-        font-weight: 600 !important; padding: 10px 24px !important;
-        width: 100% !important; transition: background 0.2s !important;
+        font-weight: 600 !important; font-size: 0.9rem !important;
+        padding: 10px 20px !important; width: 100% !important;
+        box-shadow: 0 2px 8px rgba(0,192,139,0.25) !important;
+        transition: all 0.15s !important;
     }
-    .stButton > button:hover { background: #00A077 !important; }
+    .stButton > button:hover { background: #00A077 !important; box-shadow: 0 4px 12px rgba(0,192,139,0.3) !important; }
+    .stButton > button:disabled { background: #d0d0d0 !important; box-shadow: none !important; }
+    .stDownloadButton > button {
+        background: #fff !important; color: #00C08B !important;
+        border: 1.5px solid #00C08B !important; border-radius: 8px !important;
+        font-weight: 600 !important; box-shadow: none !important;
+    }
+    .stDownloadButton > button:hover { background: #e8faf4 !important; }
 
-    /* ── INPUTS ── */
-    .stTextInput input, .stSelectbox > div > div, .stMultiSelect > div {
-        border-radius: 8px !important;
-        border: 1.5px solid #e8e8e8 !important;
-        background: #fff !important;
-        color: #1a1a1a !important;
+    /* ── TABS ── */
+    .stTabs [data-baseweb="tab-list"] { background: transparent !important; border-bottom: 2px solid #e8e8e8 !important; gap: 4px; }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent !important; color: #888 !important;
+        font-family: 'Space Grotesk', sans-serif !important; font-weight: 600 !important;
+        border-radius: 8px 8px 0 0 !important; padding: 8px 18px !important;
+        border: none !important;
     }
-    .stTextInput input:focus { border-color: #00C08B !important; }
+    .stTabs [data-baseweb="tab"]:hover { color: #00C08B !important; background: #f0faf7 !important; }
+    .stTabs [aria-selected="true"] { color: #00C08B !important; border-bottom: 2px solid #00C08B !important; }
+    .stTabs [data-baseweb="tab-panel"] { padding-top: 20px !important; }
 
-    /* ── DATAFRAME ── */
-    .stDataFrame { border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e8; }
+    /* ── METRIC CARDS ── */
+    .metric-card {
+        background: #ffffff; border: 1px solid #e8e8e8;
+        border-radius: 14px; padding: 20px 24px; margin-bottom: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .metric-value { font-family: 'Space Grotesk', sans-serif !important; font-size: 2rem; font-weight: 700; color: #00C08B; }
+    .metric-value-tiktok  { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-value-ig      { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-value-audio   { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:#00C08B; }
+    .metric-label { font-size:0.72rem; color:#999; text-transform:uppercase; letter-spacing:0.1em; margin-top:4px; font-weight:500; }
 
-    /* ── PAGE HEADER ── */
-    .page-header {
-        padding: 28px 0 16px;
-        border-bottom: 2px solid #e8e8e8;
-        margin-bottom: 28px;
+    /* ── TAGS ── */
+    .tag, .tag-ig {
+        display:inline-block; background:#e8faf4; color:#00A077;
+        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:600; margin-right:4px;
     }
-    .page-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700; color: #1a1a1a;
-    }
-    .page-title span { color: #00C08B; }
-    .page-sub { color: #888; font-size: 0.88rem; margin-top: 6px; }
 
     /* ── FILTER BADGE ── */
     .filter-badge {
-        display:inline-block; background:#e8faf4; border:1px solid #00C08B;
+        display:inline-block; background:#e8faf4; border:1px solid #b8e8d8;
         color:#00A077; border-radius:20px; padding:3px 12px;
         font-size:0.75rem; font-weight:600; margin-right:6px; margin-bottom:8px;
     }
 
-    /* ── POST / AUDIO CARDS ── */
+    /* ── INSIGHT BOX ── */
+    .insight-box {
+        background:#f0faf7; border:1px solid #c0ede0;
+        border-radius:12px; padding:14px 18px; margin-bottom:12px;
+    }
+    .insight-value { font-size:1.3rem; font-weight:700; color:#00C08B; margin-top:4px; }
+    .insight-desc  { font-size:0.75rem; color:#666; margin-top:2px; }
+
+    /* ── RANK BADGE ── */
+    .rank-badge {
+        display:inline-flex; align-items:center; justify-content:center;
+        width:34px; height:34px; border-radius:50%;
+        background:#e8faf4; border:1.5px solid #00C08B;
+        font-family:'Space Grotesk',sans-serif; font-weight:700; color:#00C08B; font-size:0.85rem;
+    }
+    .promoted-badge {
+        display:inline-block; background:#fff3e0; color:#c97000;
+        border-radius:6px; padding:2px 8px; font-size:0.7rem; font-weight:700; margin-left:6px;
+    }
+
+    /* ── ITEM CARDS ── */
     .item-card {
         background:#fff; border:1px solid #e8e8e8; border-radius:12px;
         padding:16px 20px; margin-bottom:10px;
-        box-shadow:0 1px 3px rgba(0,0,0,0.04);
-        transition: border-color 0.15s;
+        box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:border-color 0.15s;
     }
     .item-card:hover { border-color:#00C08B; }
-    .item-author { font-weight:700; color:#1a1a1a; font-size:0.95rem; }
-    .item-desc   { font-size:0.8rem; color:#888; margin-top:3px; line-height:1.5; }
 
-    /* ── SIDEBAR NAV TITLE ── */
-    .nav-brand {
-        font-family:'Space Grotesk',sans-serif; font-size:1.05rem;
-        font-weight:700; color:#1a1a1a; margin-bottom:2px;
-    }
-    .nav-sub { font-size:0.72rem; color:#aaa; margin-bottom:16px; }
+    /* ── PAGE HEADER ── */
+    .page-header { padding:24px 0 14px; border-bottom:2px solid #e8e8e8; margin-bottom:24px; }
+    .page-title { font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#1a1a1a; }
+    .page-title span { color:#00C08B; }
+    .page-sub { color:#999; font-size:0.85rem; margin-top:5px; }
 
-    /* ── RADIO ACTIVE ── */
-    .stRadio [data-testid="stMarkdownContainer"] p { color:#1a1a1a !important; font-size:0.9rem; }
+    /* ── DATAFRAME ── */
+    .stDataFrame { border-radius:10px !important; border:1px solid #e8e8e8 !important; }
+    .stDataFrame thead th { background:#f7f8fa !important; color:#1a1a1a !important; font-weight:600 !important; }
+
+    /* ── DIVIDERS ── */
+    hr { border-color:#e8e8e8 !important; }
+
+    /* ── ALERTS ── */
+    .stAlert { border-radius:10px !important; }
+    .stWarning { background:#fffbf0 !important; border-left:3px solid #f0a500 !important; }
+    .stError   { background:#fff5f5 !important; border-left:3px solid #ff4444 !important; }
+    .stInfo    { background:#f0faf7 !important; border-left:3px solid #00C08B !important; }
+
+    /* ── EXPANDER ── */
+    .streamlit-expanderHeader { background:#fff !important; border:1px solid #e8e8e8 !important; border-radius:8px !important; }
 
     /* ── MISC ── */
-    .stDownloadButton > button {
-        background:#fff !important; color:#00C08B !important;
-        border:1.5px solid #00C08B !important; border-radius:8px !important;
-        font-weight:600 !important;
-    }
-    .stDownloadButton > button:hover { background:#e8faf4 !important; }
-    .stAlert { border-radius: 10px !important; }
-    .block-container { padding-top: 2rem !important; }
+    .block-container { padding-top:1.5rem !important; max-width:1200px; }
+    .stSpinner > div { border-top-color: #00C08B !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -364,7 +369,7 @@ if modulo == "🎵 TikTok Trends":
                 with cc:
                     st.markdown(f"<div style='text-align:right'><div style='color:#1a1a1a;font-weight:600'>▶ {fmt_number(row['plays'])}</div><div style='color:#fe2c55;font-size:0.85rem'>♥ {fmt_number(row['likes'])}</div><div style='color:#666;font-size:0.78rem'>💬 {fmt_number(row['comentarios'])}</div></div>", unsafe_allow_html=True)
                 if row["url"]:
-                    st.markdown(f"<a href='{row['url']}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Ver en TikTok ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{row['url']}' target='_blank' style='color:#bbb;font-size:0.72rem;'>Ver en TikTok ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
@@ -386,7 +391,7 @@ if modulo == "🎵 TikTok Trends":
             st.dataframe(df[[c for c in show if c in df.columns]], use_container_width=True, height=450)
             st.download_button("⬇ CSV", df.to_csv(index=False).encode(), f"tiktok_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     else:
-        st.markdown("<div style='text-align:center;padding:80px 20px;color:#ccc;'><div style='font-size:3rem'>🎵</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#fe2c55\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center;padding:80px 20px;color:#bbb;'><div style='font-size:3rem'>🎵</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#fe2c55\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════
@@ -395,11 +400,9 @@ if modulo == "🎵 TikTok Trends":
 elif modulo == "📸 Instagram Trends":
 
     st.markdown("""
-    <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
-            Instagram <span style="background:linear-gradient(90deg,#f09433,#dc2743,#bc1888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trends</span>
-        </div>
-        <div style="color:#555; font-size:0.9rem; margin-top:6px;">Datos en tiempo real · Módulo 2</div>
+    <div class="page-header">
+        <div class="page-title">Instagram <span>Trends</span></div>
+        <div class="page-sub">Datos en tiempo real · Módulo 2 · Powered by Apify</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -486,7 +489,7 @@ elif modulo == "📸 Instagram Trends":
                     st.markdown(f"<div style='text-align:right'><div style='color:#1a1a1a;font-weight:600'>♥ {fmt_number(row['likes'])}</div><div style='color:#e6683c;font-size:0.85rem'>💬 {fmt_number(row['comentarios'])}</div>{views_html}</div>", unsafe_allow_html=True)
                 if row["url"]:
                     link = row["url"] if row["url"].startswith("http") else f"https://www.instagram.com/p/{row['url']}"
-                    st.markdown(f"<a href='{link}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Ver en Instagram ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{link}' target='_blank' style='color:#bbb;font-size:0.72rem;'>Ver en Instagram ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         with tab2:
@@ -509,26 +512,26 @@ elif modulo == "📸 Instagram Trends":
                 best = df.groupby("tipo")["engagement"].mean()
                 if not best.empty:
                     bt,bv = best.idxmax(), best.max()
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">🏆 Mejor formato</div><div class="insight-value">{bt}</div><div class="insight-desc">Promedio {fmt_number(int(bv))} interacciones</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a;font-size:0.85rem;margin-bottom:4px">🏆 Mejor formato</div><div class="insight-value">{bt}</div><div class="insight-desc">Promedio {fmt_number(int(bv))} interacciones</div></div>', unsafe_allow_html=True)
                 ratio = df["likes"].sum() / max(df["comentarios"].sum(),1)
-                st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">💬 Ratio Likes/Comentarios</div><div class="insight-value">{ratio:.0f}:1</div><div class="insight-desc">Por cada comentario hay {ratio:.0f} likes</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a;font-size:0.85rem;margin-bottom:4px">💬 Ratio Likes/Comentarios</div><div class="insight-value">{ratio:.0f}:1</div><div class="insight-desc">Por cada comentario hay {ratio:.0f} likes</div></div>', unsafe_allow_html=True)
             with cb:
                 top_a = df.groupby("autor")["engagement"].sum()
                 if not top_a.empty:
                     ta,tv = top_a.idxmax(), top_a.max()
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">⭐ Cuenta top</div><div class="insight-value">{ta}</div><div class="insight-desc">{fmt_number(int(tv))} engagement acumulado</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a;font-size:0.85rem;margin-bottom:4px">⭐ Cuenta top</div><div class="insight-value">{ta}</div><div class="insight-desc">{fmt_number(int(tv))} engagement acumulado</div></div>', unsafe_allow_html=True)
                 reels = df[df["tipo"]=="Reel"]["engagement"].mean() if "Reel" in df["tipo"].values else 0
                 otros = df[df["tipo"]!="Reel"]["engagement"].mean() if len(df[df["tipo"]!="Reel"])>0 else 0
                 if reels and otros:
                     diff = ((reels-otros)/max(otros,1))*100
-                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a">🎬 Reels vs otros</div><div class="insight-value">{diff:+.0f}%</div><div class="insight-desc">Diferencia de engagement</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="insight-box"><div style="font-weight:700;color:#1a1a1a;font-size:0.85rem;margin-bottom:4px">🎬 Reels vs otros</div><div class="insight-value">{diff:+.0f}%</div><div class="insight-desc">Diferencia de engagement</div></div>', unsafe_allow_html=True)
 
         with tab4:
             show = ["autor","tipo","likes","comentarios","views","engagement","hashtag_src","fecha","url"]
             st.dataframe(df[[c for c in show if c in df.columns]], use_container_width=True, height=450)
             st.download_button("⬇ CSV", df.to_csv(index=False).encode(), f"instagram_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     else:
-        st.markdown("<div style='text-align:center;padding:80px 20px;color:#ccc;'><div style='font-size:3rem'>📸</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#dc2743\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center;padding:80px 20px;color:#bbb;'><div style='font-size:3rem'>📸</div><div style='color:#888;margin-top:12px;font-family:Space Grotesk'>Ingresa tu token y pulsa <strong style=\"color:#dc2743\">Buscar Trends</strong></div></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════
@@ -540,11 +543,9 @@ elif modulo == "🔊 Audio Trends":
     country_code = pais_info["codigo"]
 
     st.markdown(f"""
-    <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
-            🔊 Audio <span style="background:linear-gradient(90deg,#6c63ff,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trends</span>
-        </div>
-        <div style="color:#555; font-size:0.9rem; margin-top:6px;">Sonidos virales en TikTok · {pais_sel} · Módulo 3</div>
+    <div class="page-header">
+        <div class="page-title">🔊 Audio <span>Trends</span></div>
+        <div class="page-sub">Sonidos virales en TikTok · {pais_sel} · Módulo 3 · Powered by Apify</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -713,7 +714,7 @@ elif modulo == "🔊 Audio Trends":
                     """, unsafe_allow_html=True)
 
                 if row.get("url_sound"):
-                    st.markdown(f"<a href='{row['url_sound']}' target='_blank' style='color:#ccc;font-size:0.72rem;'>Escuchar ↗</a>", unsafe_allow_html=True)
+                    st.markdown(f"<a href='{row['url_sound']}' target='_blank' style='color:#bbb;font-size:0.72rem;'>Escuchar ↗</a>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
         # ── TAB 2: CHARTS ──
@@ -778,7 +779,7 @@ elif modulo == "🔊 Audio Trends":
 
     else:
         st.markdown(f"""
-        <div style="text-align:center;padding:80px 20px;color:#ccc;">
+        <div style="text-align:center;padding:80px 20px;color:#bbb;">
             <div style="font-size:3rem">🔊</div>
             <div style="color:#888;margin-top:12px;font-family:Space Grotesk;font-size:1.1rem">
                 Ingresa tu token y pulsa <strong style="color:#a855f7">Buscar Trends</strong>
@@ -796,11 +797,9 @@ elif modulo == "🔊 Audio Trends":
 elif modulo == "📡 Tendencias Cruzadas":
 
     st.markdown("""
-    <div style="padding:28px 0 16px; border-bottom:1px solid rgba(255,255,255,0.07); margin-bottom:28px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:#1a1a1a;">
-            📡 Tendencias <span style="background:linear-gradient(90deg,#3b82f6,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Cruzadas</span>
-        </div>
-        <div style="color:#555; font-size:0.9rem; margin-top:6px;">Google · TikTok · YouTube · Reddit · en una sola vista · Módulo 4</div>
+    <div class="page-header">
+        <div class="page-title">📡 Tendencias <span>Cruzadas</span></div>
+        <div class="page-sub">Google · TikTok · YouTube · Reddit en una sola vista · Módulo 4 · Powered by TrendsMCP</div>
     </div>
     """, unsafe_allow_html=True)
 
