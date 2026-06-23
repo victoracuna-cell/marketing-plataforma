@@ -720,7 +720,7 @@ elif modulo == "📡 Tendencias Cruzadas":
     </div>
     """, unsafe_allow_html=True)
 
-    for k in ["cx_data","cx_err","cx_keyword","cx_growth"]:
+    for k in ["cx_data","cx_err","cx_keyword","cx_growth","cx_debug"]:
         if k not in st.session_state: st.session_state[k] = None
 
     col_k, col_t = st.columns([3,2])
@@ -745,46 +745,70 @@ elif modulo == "📡 Tendencias Cruzadas":
 
     def fetch_series(key, kw, source, period):
         try:
-            r = requests.get("https://api.trendsmcp.ai/v1/trends",
-                headers={"Authorization": f"Bearer {key}"},
-                params={"keyword": kw, "source": source, "data_mode": "weekly", "period": period},
-                timeout=20)
+            r = requests.post(
+                "https://api.trendsmcp.ai/api",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"keyword": kw, "source": source},
+                timeout=20,
+            )
             if r.status_code == 200:
                 d = r.json()
-                return d if isinstance(d, list) else (d.get("data") or d.get("results") or d.get("series") or [])
+                # La respuesta trae {"body": "[{...}]"} — body es string JSON
+                body = d.get("body") or d
+                if isinstance(body, str):
+                    import json as _json
+                    body = _json.loads(body)
+                if isinstance(body, list):
+                    return body
+                return body.get("data") or body.get("results") or body.get("series") or []
         except Exception:
             pass
         return []
 
     def fetch_growth(key, kw, source):
         try:
-            r = requests.get("https://api.trendsmcp.ai/v1/growth",
-                headers={"Authorization": f"Bearer {key}"},
-                params={"keyword": kw, "source": source, "percent_growth": "1M,3M,12M"},
-                timeout=15)
+            r = requests.post(
+                "https://api.trendsmcp.ai/api",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"keyword": kw, "source": source, "type": "growth", "percent_growth": ["1M","3M","12M"]},
+                timeout=15,
+            )
             if r.status_code == 200:
-                return r.json()
+                d = r.json()
+                body = d.get("body") or d
+                if isinstance(body, str):
+                    import json as _json
+                    body = _json.loads(body)
+                return body if isinstance(body, dict) else {}
         except Exception:
             pass
         return {}
 
     if buscar_cx and keyword and trends_key and fuentes_sel:
         with st.spinner(f"📡 Comparando '{keyword}' en {len(fuentes_sel)} plataformas..."):
-            all_series, all_growth, errors = {}, {}, []
+            all_series, all_growth, errors, debug_info = {}, {}, [], {}
             for label in fuentes_sel:
                 src    = FUENTES[label]
                 series = fetch_series(trends_key, keyword, src, periodo_cx)
-                if series: all_series[label] = series
-                else: errors.append(label)
+                if series:
+                    all_series[label] = series
+                else:
+                    errors.append(label)
                 growth = fetch_growth(trends_key, keyword, src)
                 if growth: all_growth[label] = growth
+                # guardar debug
+                debug_info[label] = {"series_len": len(series), "growth_keys": list(growth.keys())}
             st.session_state.cx_data    = all_series
             st.session_state.cx_growth  = all_growth
             st.session_state.cx_keyword = keyword
             st.session_state.cx_err     = errors if errors else None
+            st.session_state.cx_debug   = debug_info
 
     if st.session_state.cx_err:
         st.warning(f"⚠️ Sin datos para: {', '.join(st.session_state.cx_err)} — puede ser límite de requests o keyword no encontrada.")
+        if st.session_state.get("cx_debug"):
+            with st.expander("🔍 Debug — respuesta de la API"):
+                st.json(st.session_state.cx_debug)
 
     cx_data   = st.session_state.cx_data
     cx_growth = st.session_state.cx_growth
