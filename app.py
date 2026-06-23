@@ -463,79 +463,105 @@ elif modulo == "🔊 Audio Trends":
     </div>
     """, unsafe_allow_html=True)
 
-    for k in ["au_df","au_err"]:
+    for k in ["au_df","au_err","au_src"]:
         if k not in st.session_state: st.session_state[k] = None
 
     if fetch_btn and api_token:
-        # Estrategia: extraer videos trending del país y agregar audios por frecuencia de uso
-        actor_id = "clockworks~free-tiktok-scraper"
-        url = f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items"
-        hp = pais_info["hashtag"]
-        payload = {
-            "searchQueries": [f"#{hp}", f"trending {hp}", f"#fyp{hp}", "#chile"],
-            "maxItems": max(max_items_audio * 3, 60),
-            "resultsPerPage": max(max_items_audio * 3, 60),
-            "shouldDownloadVideos": False,
-            "shouldDownloadCovers": False,
-        }
         with st.spinner(f"⏳ Extrayendo audios trending en {pais_sel}..."):
+
+            df_au = None
+            source_label = ""
+
+            # ── INTENTO 1: Actor dedicado alien_force ──────────────────
             try:
+                actor_id = "alien_force~tiktok-trending-sounds-tracker"
+                url = f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items"
+                payload = {"country_code": country_code, "limit": max_items_audio}
                 resp = requests.post(url, json=payload,
-                                     params={"token": api_token, "timeout": 120}, timeout=180)
+                                     params={"token": api_token, "timeout": 90}, timeout=120)
                 resp.raise_for_status()
                 raw = resp.json()
 
-                # Agregar audios por frecuencia
-                music_data = {}
-                for item in raw:
-                    music = item.get("musicMeta") or {}
-                    mid   = music.get("musicId") or music.get("musicName", "")
-                    if not mid: continue
-                    name  = music.get("musicName","") or music.get("musicOriginal","Sonido original")
-                    author= music.get("musicAuthor","") or "—"
-                    dur   = music.get("musicDuration", 0) or 0
-                    play  = music.get("musicPlay","") or ""
-                    if mid not in music_data:
-                        music_data[mid] = {
-                            "titulo":   name,
-                            "artista":  author,
-                            "duracion": dur,
-                            "url_sound": play,
-                            "usos":     0,
+                if raw and len(raw) > 0 and any(
+                    r.get("title") or r.get("rank") for r in raw
+                ):
+                    rows = []
+                    for item in raw:
+                        rows.append({
+                            "rank":       item.get("rank") or len(rows)+1,
+                            "titulo":     item.get("title") or item.get("name","—"),
+                            "artista":    item.get("author") or item.get("authorName","—"),
+                            "duracion":   item.get("duration", 0) or 0,
+                            "usos":       item.get("useCount") or item.get("videoCount") or 0,
+                            "promocionado": bool(item.get("isPromoted") or item.get("promoted", False)),
+                            "trend_7d":   item.get("trend7") or item.get("trendChange7") or 0,
+                            "trend_30d":  item.get("trend30") or item.get("trendChange30") or 0,
+                            "url_sound":  item.get("playUrl") or item.get("link") or "",
                             "likes_total": 0,
                             "plays_total": 0,
-                        }
-                    music_data[mid]["usos"]        += 1
-                    music_data[mid]["likes_total"] += item.get("diggCount", 0) or 0
-                    music_data[mid]["plays_total"] += item.get("playCount", 0) or 0
+                        })
+                    df_au = pd.DataFrame(rows)
+                    source_label = "🎯 Datos del TikTok Creative Center (ranking oficial)"
+            except Exception:
+                pass  # cae al intento 2
 
-                rows = []
-                for rank, (mid, d) in enumerate(
-                    sorted(music_data.items(), key=lambda x: x[1]["usos"], reverse=True), 1
-                ):
-                    rows.append({
-                        "rank":        rank,
-                        "titulo":      d["titulo"] or "Sonido original",
-                        "artista":     d["artista"],
-                        "duracion":    d["duracion"],
-                        "usos":        d["usos"],
-                        "likes_total": d["likes_total"],
-                        "plays_total": d["plays_total"],
-                        "url_sound":   d["url_sound"],
-                        "promocionado": False,
-                        "trend_7d":    0,
-                        "trend_30d":   0,
-                    })
+            # ── INTENTO 2: Fallback — agregación de 300 videos ─────────
+            if df_au is None or df_au.empty:
+                try:
+                    actor_id2 = "clockworks~free-tiktok-scraper"
+                    url2 = f"https://api.apify.com/v2/acts/{actor_id2}/run-sync-get-dataset-items"
+                    hp = pais_info["hashtag"]
+                    payload2 = {
+                        "searchQueries": [f"#{hp}", f"trending {hp}", f"#fyp{hp}", f"#foryou{hp}"],
+                        "maxItems": 300,
+                        "resultsPerPage": 300,
+                        "shouldDownloadVideos": False,
+                        "shouldDownloadCovers": False,
+                    }
+                    resp2 = requests.post(url2, json=payload2,
+                                          params={"token": api_token, "timeout": 120}, timeout=180)
+                    resp2.raise_for_status()
+                    raw2 = resp2.json()
 
-                df_au = pd.DataFrame(rows[:max_items_audio]) if rows else pd.DataFrame()
-                st.session_state.au_df  = df_au
+                    music_data = {}
+                    for item in raw2:
+                        music = item.get("musicMeta") or {}
+                        mid   = music.get("musicId") or music.get("musicName","")
+                        if not mid: continue
+                        name   = music.get("musicName","") or "Sonido original"
+                        author = music.get("musicAuthor","") or "—"
+                        dur    = music.get("musicDuration", 0) or 0
+                        play   = music.get("musicPlay","") or ""
+                        if mid not in music_data:
+                            music_data[mid] = {"titulo": name, "artista": author,
+                                               "duracion": dur, "url_sound": play,
+                                               "usos": 0, "likes_total": 0, "plays_total": 0}
+                        music_data[mid]["usos"]        += 1
+                        music_data[mid]["likes_total"] += item.get("diggCount", 0) or 0
+                        music_data[mid]["plays_total"] += item.get("playCount", 0) or 0
+
+                    rows2 = []
+                    for rank, (mid, d) in enumerate(
+                        sorted(music_data.items(), key=lambda x: x[1]["usos"], reverse=True), 1
+                    ):
+                        rows2.append({
+                            "rank": rank, "titulo": d["titulo"], "artista": d["artista"],
+                            "duracion": d["duracion"], "usos": d["usos"],
+                            "likes_total": d["likes_total"], "plays_total": d["plays_total"],
+                            "url_sound": d["url_sound"], "promocionado": False,
+                            "trend_7d": 0, "trend_30d": 0,
+                        })
+
+                    df_au = pd.DataFrame(rows2[:max_items_audio])
+                    source_label = f"📊 Agregado de {len(raw2)} videos trending (muestra estadística)"
+                except Exception as e2:
+                    st.session_state.au_err = str(e2)
+                    df_au = None
+
+            st.session_state.au_df    = df_au
+            st.session_state.au_src   = source_label
+            if df_au is not None:
                 st.session_state.au_err = None
-            except requests.exceptions.HTTPError:
-                st.session_state.au_err = f"Error HTTP {resp.status_code}. Verifica tu token."
-                st.session_state.au_df  = None
-            except Exception as e:
-                st.session_state.au_err = str(e)
-                st.session_state.au_df  = None
 
     if st.session_state.au_err:
         st.error(f"❌ {st.session_state.au_err}")
@@ -543,6 +569,10 @@ elif modulo == "🔊 Audio Trends":
     df_au = st.session_state.au_df
 
     if df_au is not None and not df_au.empty:
+
+        # Fuente de datos
+        if st.session_state.au_src:
+            st.markdown(f"<div style='font-size:0.78rem;color:#555;margin-bottom:16px'>{st.session_state.au_src}</div>", unsafe_allow_html=True)
 
         # KPIs
         c1,c2,c3,c4 = st.columns(4)
